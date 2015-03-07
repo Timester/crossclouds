@@ -3,3 +3,12 @@ build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
+
+# Ignore Idea files
+.idea
+.idea/
+out
+out/
+*.iml
+
+target
