@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':core')
+    compile('com.amazonaws:aws-java-sdk:1.9.21')
+}

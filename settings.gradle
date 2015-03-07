@@ -1,0 +1,6 @@
+rootProject.name = 'crossclouds'
+
+include 'core'
+include 'AWSProvider'
+include 'AzureProvider'
+
