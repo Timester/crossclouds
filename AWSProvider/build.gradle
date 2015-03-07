@@ -2,3 +2,12 @@ dependencies {
     compile project(':core')
     compile('com.amazonaws:aws-java-sdk:1.9.21')
 }
+
+task fatJar(type: Jar) {
+    manifest.attributes(
+            'Manifest-Version': '1.0'
+    )
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

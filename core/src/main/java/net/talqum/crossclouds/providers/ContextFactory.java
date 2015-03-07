@@ -1,7 +1,13 @@
 package net.talqum.crossclouds.providers;
 
 import com.google.common.reflect.TypeToken;
+import net.talqum.crossclouds.Service;
 import net.talqum.crossclouds.common.Context;
+import net.talqum.crossclouds.common.ProviderMetadata;
+import net.talqum.crossclouds.exceptions.ProviderNotFoundException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Imre on 2015.03.07..
@@ -11,8 +17,16 @@ public class ContextFactory {
     private String secret;
     private final String provider;
 
+    private ProviderMetadata providerMetadata;
+
     private ContextFactory(String provider) {
         this.provider = provider;
+        try {
+            this.providerMetadata = Providers.find(provider);
+            System.out.println(providerMetadata.getClass());
+        } catch (ProviderNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static ContextFactory newFactory(String provider){
@@ -25,34 +39,16 @@ public class ContextFactory {
         return this;
     }
 
-    public <C extends Context> build(Class<C> contextType){
-        /*
-        if(provider == null){
-            return null;
-        }
+    public <C extends Context> C build(Class<C> contextType) {
 
-        if(provider.equals(Provider.AWS)){
-            try {
-                return new DefaultAWSS3BlobStoreContext(identity, secret);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        } else if(provider.equals(Provider.AZURE)){
-            try{
-                return new DefaultAzureBlobStoreContext(identity, secret);
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-                return null;
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-        else{
+        try {
+            C retval = (C)providerMetadata.getServices().get(0).getRawType().getConstructor(String.class, String.class).newInstance(identity, secret);
+
+            return retval;
+
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
-        */
-        return new Context();
     }
 }

@@ -12,6 +12,6 @@ public class TypeConverter {
      */
     @SuppressWarnings("unchecked")
     public static <T> TypeToken<T> typeToken(Class<T> in) {
-        return new TypeToken<T>(in) {};
+        return TypeToken.of(in);
     }
 }
