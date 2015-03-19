@@ -1,11 +1,11 @@
 package net.talqum.crossclouds.providers.aws.s3;
 
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.*;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,7 +53,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean blobExists(String container, String name) {
+    public boolean blobExists(String container, String blobName) {
         return false;
     }
 
@@ -81,18 +81,29 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public Blob getBlob(String container, String name) {
+    public Blob getBlob(String container, String blobName) {
         return null;
     }
 
     @Override
-    public void removeBlob(String container, String name) {
-
+    public void removeBlob(String container, String blobName) {
+        ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteObject(container, blobName);
     }
 
     @Override
     public long countBlobs(String container) {
-        return 0;
+        AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+        ObjectListing objectListing = client.listObjects(container);
+        long count = objectListing.getObjectSummaries().size();
+        boolean truncated = objectListing.isTruncated();
+
+        while(truncated){
+            ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
+            count += subListing.getObjectSummaries().size();
+            truncated = subListing.isTruncated();
+        }
+
+        return count;
     }
 
 }

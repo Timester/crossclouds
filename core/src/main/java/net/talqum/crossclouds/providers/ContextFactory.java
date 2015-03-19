@@ -1,13 +1,8 @@
 package net.talqum.crossclouds.providers;
 
-import com.google.common.reflect.TypeToken;
-import net.talqum.crossclouds.Service;
 import net.talqum.crossclouds.common.Context;
 import net.talqum.crossclouds.common.ProviderMetadata;
 import net.talqum.crossclouds.exceptions.ProviderNotFoundException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Imre on 2015.03.07..
