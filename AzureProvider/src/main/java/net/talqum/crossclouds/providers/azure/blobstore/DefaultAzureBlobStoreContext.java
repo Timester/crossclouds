@@ -1,5 +1,6 @@
 package net.talqum.crossclouds.providers.azure.blobstore;
 
+import com.microsoft.azure.storage.blob.CloudBlobClient;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import com.microsoft.azure.storage.*;
 public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext implements AzureBlobStoreContext {
 
     private final CloudStorageAccount storageAccount;
+    private final CloudBlobClient blobClient;
 
     public DefaultAzureBlobStoreContext(String identity, String secret) throws URISyntaxException, InvalidKeyException{
         super();
@@ -22,6 +24,7 @@ public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext imple
                 "AccountKey=" + secret;
 
         this.storageAccount = CloudStorageAccount.parse(storageConnectionString);
+        this.blobClient = storageAccount.createCloudBlobClient();
 
         setBlobStore(new AzureBlobStore(this));
     }
@@ -31,6 +34,9 @@ public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext imple
         return AzureBlobStore.class.cast(super.getBlobStore());
     }
 
+    public CloudBlobClient getClient(){
+        return this.blobClient;
+    }
 
     @Override
     public void close() throws IOException {

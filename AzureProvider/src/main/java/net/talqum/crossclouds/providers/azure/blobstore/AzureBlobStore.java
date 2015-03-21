@@ -1,8 +1,16 @@
 package net.talqum.crossclouds.providers.azure.blobstore;
 
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.ListBlobItem;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -16,24 +24,53 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean containerExists(String container) {
-        //TODO
-        return false;
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            return containerReference.exists();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return false;
+        } catch (StorageException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean createContainer(String container) {
-        if(!containerExists(container)) {
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
-            // TODO
-            return true;
-        } else {
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            return containerReference.createIfNotExists();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return false;
+        } catch (StorageException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
     @Override
     public Set<String> listContainerContent(String container) {
-        // TODO
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+
+            Set<String> content = new HashSet<>();
+            for (ListBlobItem blobItem : containerReference.listBlobs()) {
+                content.add(blobItem.getUri().toString());
+            }
+            return content;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -44,23 +81,75 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public void deleteContainer(String container) {
-        // TODO
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            containerReference.delete();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean deleteContainerIfEmpty(String container) {
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+
+            // TODO
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 
     @Override
     public boolean blobExists(String container, String blobName) {
-        return false;
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blobName);
+
+            return blockBlobReference.exists();
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return false;
+        } catch (StorageException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean putBlob(String container, Blob blob) {
         if(!containerExists(container)) {
             createContainer(container);
+        }
+
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blob.getName());
+
+            blockBlobReference.upload(blob.getPayload().openStream(), blob.getPayload().getContentLength());
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (StorageException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         // TODO
