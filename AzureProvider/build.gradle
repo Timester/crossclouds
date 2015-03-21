@@ -5,3 +5,12 @@ dependencies {
     compile('com.microsoft.azure:azure-management:0.7.0')
     compile('com.microsoft.azure:azure-storage:2.0.0')
 }
+
+task fatJar(type: Jar) {
+    manifest.attributes(
+            'Manifest-Version': '1.0'
+    )
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

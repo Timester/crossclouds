@@ -47,23 +47,26 @@ public class AWSS3BlobStore extends AbstractBlobStore {
         ObjectListing objectListing = client.listObjects(container);
         List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
         Set<String> names = new HashSet<>();
-        // TODO befejezni
 
+        names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
 
         boolean truncated = objectListing.isTruncated();
 
         while(truncated){
             ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
+            objectSummaries = objectListing.getObjectSummaries();
+
+            names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
 
             truncated = subListing.isTruncated();
         }
 
-        return null;
+        return names;
     }
 
     @Override
     public void clearContainer(String container) {
-
+        // TODO finish
     }
 
     @Override
@@ -73,12 +76,15 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean deleteContainerIfEmpty(String container) {
+        // TODO finish
         return false;
     }
 
     @Override
     public boolean blobExists(String container, String blobName) {
-        return false;
+        S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
+
+        return s3Object == null;
     }
 
     @Override
