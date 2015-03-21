@@ -2,11 +2,20 @@ package net.talqum.crossclouds.providers.aws.s3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
+import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
+import net.talqum.crossclouds.blobstorage.common.Payload;
+import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 
+import java.io.*;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Imre on 2015.03.04..
@@ -34,6 +43,21 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Set<String> listContainerContent(String container) {
+        AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+        ObjectListing objectListing = client.listObjects(container);
+        List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
+        Set<String> names = new HashSet<>();
+        // TODO befejezni
+
+
+        boolean truncated = objectListing.isTruncated();
+
+        while(truncated){
+            ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
+
+            truncated = subListing.isTruncated();
+        }
+
         return null;
     }
 
@@ -44,7 +68,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public void deleteContainer(String container) {
-
+        ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteBucket(container);
     }
 
     @Override
@@ -59,7 +83,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean putBlob(String container, Blob blob) {
-
         if(!containerExists(container)) {
             createContainer(container);
         }
@@ -82,12 +105,41 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) {
+        S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
+
+        ObjectMetadata objectMetadata = s3Object.getObjectMetadata();
+        String contentType = objectMetadata.getContentType();
+
+        switch (contentType){
+            case "image/jpeg": {
+                File f = new File(s3Object.getKey());
+                try {
+                    OutputStream os = new FileOutputStream(f);
+
+                    int read = 0;
+                    byte[] bytes = new byte[1024];
+
+                    while ((read = s3Object.getObjectContent().read(bytes)) != -1) {
+                        os.write(bytes, 0, read);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Payload p = new FilePayload(f);
+                return new DefaultBlob(blobName, p);
+            }
+        }
+
         return null;
     }
 
     @Override
     public void removeBlob(String container, String blobName) {
-        ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteObject(container, blobName);
+        try {
+            ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteObject(container, blobName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

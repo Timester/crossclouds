@@ -1,3 +1,7 @@
 dependencies {
     compile project(':core')
+    compile('com.microsoft.azure:azure-management-storage:0.7.0')
+    compile('com.microsoft.azure:azure-core:0.7.0')
+    compile('com.microsoft.azure:azure-management:0.7.0')
+    compile('com.microsoft.azure:azure-storage:2.0.0')
 }
