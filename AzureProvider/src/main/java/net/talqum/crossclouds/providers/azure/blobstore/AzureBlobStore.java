@@ -66,9 +66,7 @@ public class AzureBlobStore extends AbstractBlobStore {
                 content.add(blobItem.getUri().toString());
             }
             return content;
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (StorageException e) {
+        } catch (URISyntaxException | StorageException e) {
             e.printStackTrace();
         }
         return null;
@@ -76,7 +74,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public void clearContainer(String container) {
-
+        // TODO finish
     }
 
     @Override
@@ -86,9 +84,7 @@ public class AzureBlobStore extends AbstractBlobStore {
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             containerReference.delete();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (StorageException e) {
+        } catch (URISyntaxException | StorageException e) {
             e.printStackTrace();
         }
     }
@@ -102,9 +98,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             // TODO
 
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (StorageException e) {
+        } catch (URISyntaxException | StorageException e) {
             e.printStackTrace();
         }
 
@@ -144,27 +138,31 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             blockBlobReference.upload(blob.getPayload().openStream(), blob.getPayload().getContentLength());
 
-        } catch (URISyntaxException e) {
+            return true;
+        } catch (URISyntaxException | IOException | StorageException e) {
             e.printStackTrace();
-        } catch (StorageException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
-
-        // TODO
-        return false;
     }
 
     @Override
     public Blob getBlob(String container, String blobName) {
-
+        // TODO finish
         return null;
     }
 
     @Override
     public void removeBlob(String container, String blobName) {
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blobName);
+
+            blockBlobReference.deleteIfExists();
+        } catch (URISyntaxException | StorageException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

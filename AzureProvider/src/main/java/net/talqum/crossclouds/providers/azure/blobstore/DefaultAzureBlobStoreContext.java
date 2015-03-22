@@ -14,7 +14,6 @@ import com.microsoft.azure.storage.*;
  */
 public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext implements AzureBlobStoreContext {
 
-    private final CloudStorageAccount storageAccount;
     private final CloudBlobClient blobClient;
 
     public DefaultAzureBlobStoreContext(String identity, String secret) throws URISyntaxException, InvalidKeyException{
@@ -23,7 +22,7 @@ public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext imple
                 "AccountName=" + identity + ";" +
                 "AccountKey=" + secret;
 
-        this.storageAccount = CloudStorageAccount.parse(storageConnectionString);
+        CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
         this.blobClient = storageAccount.createCloudBlobClient();
 
         setBlobStore(new AzureBlobStore(this));

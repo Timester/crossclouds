@@ -2,8 +2,6 @@ package net.talqum.crossclouds.providers.aws.s3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
 import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
@@ -11,7 +9,6 @@ import net.talqum.crossclouds.blobstorage.common.Payload;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

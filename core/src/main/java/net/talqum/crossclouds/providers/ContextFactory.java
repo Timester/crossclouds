@@ -34,6 +34,7 @@ public class ContextFactory {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends Context> C build(Class<C> contextType) {
 
         try {
