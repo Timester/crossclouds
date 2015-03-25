@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface ProviderMetadata {
 
-    public String getId();
+    String getId();
 
-    public List<TypeToken<? extends Service>> getServices();
+    List<TypeToken<? extends Service>> getServices();
 }

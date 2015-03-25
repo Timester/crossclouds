@@ -1,8 +1,7 @@
 task fatJar(type: Jar) {
     manifest.attributes(
             'Class-Path': 'AWSProvider-all.jar',
-            'Manifest-Version': '1.0',
-            'Main-Class': 'net.talqum.crossclouds.TestProg'
+            'Manifest-Version': '1.0'
     )
             baseName = project.name + '-all'
             from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

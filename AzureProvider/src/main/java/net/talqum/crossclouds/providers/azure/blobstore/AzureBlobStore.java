@@ -83,7 +83,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
-            containerReference.delete();
+            containerReference.deleteIfExists();
         } catch (URISyntaxException | StorageException e) {
             e.printStackTrace();
         }
@@ -168,7 +168,20 @@ public class AzureBlobStore extends AbstractBlobStore {
     @Override
     public long countBlobs(String container) {
 
-        // TODO
+        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+
+        try {
+            CloudBlobContainer containerReference = client.getContainerReference(container);
+            long counter = 0;
+            Set<String> content = new HashSet<>();
+            for (ListBlobItem blobItem : containerReference.listBlobs()) {
+                counter++;
+            }
+            return counter;
+        } catch (URISyntaxException | StorageException e) {
+            e.printStackTrace();
+        }
+
         return 0;
     }
 

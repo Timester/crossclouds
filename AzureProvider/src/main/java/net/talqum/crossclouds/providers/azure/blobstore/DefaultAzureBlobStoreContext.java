@@ -1,13 +1,12 @@
 package net.talqum.crossclouds.providers.azure.blobstore;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-
-import com.microsoft.azure.storage.*;
 
 /**
  * Created by Imre on 2015.03.04..

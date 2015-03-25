@@ -119,7 +119,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 try {
                     OutputStream os = new FileOutputStream(f);
 
-                    int read = 0;
+                    int read;
                     byte[] bytes = new byte[1024];
 
                     while ((read = s3Object.getObjectContent().read(bytes)) != -1) {

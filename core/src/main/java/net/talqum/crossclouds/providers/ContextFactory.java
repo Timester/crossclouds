@@ -10,12 +10,10 @@ import net.talqum.crossclouds.exceptions.ProviderNotFoundException;
 public class ContextFactory {
     private String identity;
     private String secret;
-    private final String provider;
 
     private ProviderMetadata providerMetadata;
 
     private ContextFactory(String provider) {
-        this.provider = provider;
         try {
             this.providerMetadata = Providers.find(provider);
             System.out.println(providerMetadata.getClass());
@@ -38,9 +36,8 @@ public class ContextFactory {
     public <C extends Context> C build(Class<C> contextType) {
 
         try {
-            C retval = (C)providerMetadata.getServices().get(0).getRawType().getConstructor(String.class, String.class).newInstance(identity, secret);
 
-            return retval;
+            return (C)providerMetadata.getServices().get(0).getRawType().getConstructor(String.class, String.class).newInstance(identity, secret);
 
         } catch (Exception e) {
             e.printStackTrace();
