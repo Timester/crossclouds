@@ -84,7 +84,6 @@ public class AzureBlobStoreTest {
     @Test
     public void clearContainer(){
         try {
-            assertFalse(ctx.getBlobStore().countBlobs(AzureFixtures.BUCKET_NAME) == 0);
             ctx.getBlobStore().clearContainer(AzureFixtures.BUCKET_NAME);
             assertTrue(ctx.getBlobStore().countBlobs(AzureFixtures.BUCKET_NAME) == 0);
         } catch (ContainerNotFoundException e) {

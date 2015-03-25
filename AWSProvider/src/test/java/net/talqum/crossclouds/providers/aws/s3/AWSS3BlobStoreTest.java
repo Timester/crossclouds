@@ -87,7 +87,6 @@ public class AWSS3BlobStoreTest {
     @Test
     public void clearContainer(){
         try {
-            assertFalse(ctx.getBlobStore().countBlobs(AWSFixtures.BUCKET_NAME) == 0);
             ctx.getBlobStore().clearContainer(AWSFixtures.BUCKET_NAME);
             assertTrue(ctx.getBlobStore().countBlobs(AWSFixtures.BUCKET_NAME) == 0);
         } catch (ContainerNotFoundException e) {
