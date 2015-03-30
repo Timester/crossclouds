@@ -77,8 +77,29 @@ public class AzureBlobStoreTest {
     }
 
     @Test
-    public void deleteBlob(){
+    public void testBlobExist(){
+        boolean exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + "alma");
+        assertFalse(exists);
+
+        Payload pl = new StringPayload(AzureFixtures.TEST_STRING_CONTENT);
+        ctx.getBlobStore().putBlob(AzureFixtures.BUCKET_NAME, new DefaultBlob(AzureFixtures.TEST_STRING + "alma", pl));
+
+        exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + "alma");
+        assertTrue(exists);
+
+        ctx.getBlobStore().removeBlob(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + "alma");
+        exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + "alma");
+        assertFalse(exists);
+    }
+
+    @Test
+    public void testDeleteBlob(){
+        boolean exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_IMAGE);
+        assertTrue(exists);
         ctx.getBlobStore().removeBlob(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_IMAGE);
+
+        exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_IMAGE);
+        assertFalse(exists);
     }
 
     @Test

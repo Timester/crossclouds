@@ -38,6 +38,5 @@ public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext imple
 
     @Override
     public void close() throws IOException {
-        // TODO
     }
 }

@@ -44,14 +44,14 @@ public class AWSS3BlobStoreTest {
     }
 
     @Test
-    public void createContainer(){
+    public void testCreateContainer(){
         assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
         assertTrue(ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1));
         assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
     }
 
     @Test
-    public void deleteContainer(){
+    public void testDeleteContainer(){
         ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1);
         assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
         ctx.getBlobStore().deleteContainer(AWSFixtures.BUCKET_NAME + 1);
@@ -59,7 +59,7 @@ public class AWSS3BlobStoreTest {
     }
 
     @Test
-    public void putFileBlob(){
+    public void testPutFileBlob(){
         Payload pl = null;
         try {
             pl = new FilePayload(new File(ClassLoader.getSystemResource(AWSFixtures.TEST_IMAGE).toURI()));
@@ -72,7 +72,7 @@ public class AWSS3BlobStoreTest {
     }
 
     @Test
-    public void putStringBlob(){
+    public void testPutStringBlob(){
         Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
         boolean success = ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_STRING, pl));
 
@@ -80,12 +80,33 @@ public class AWSS3BlobStoreTest {
     }
 
     @Test
-    public void deleteBlob(){
-        ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+    public void testBlobExist(){
+        boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING + "alma");
+        assertFalse(exists);
+
+        Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
+        ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_STRING + "alma", pl));
+
+        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING + "alma");
+        assertTrue(exists);
+
+        ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING + "alma");
+        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING + "alma");
+        assertFalse(exists);
     }
 
     @Test
-    public void clearContainer(){
+    public void testDeleteBlob(){
+        boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+        assertTrue(exists);
+        ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+
+        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+        assertFalse(exists);
+    }
+
+    @Test
+    public void testClearContainer(){
         try {
             ctx.getBlobStore().clearContainer(AWSFixtures.BUCKET_NAME);
             assertTrue(ctx.getBlobStore().countBlobs(AWSFixtures.BUCKET_NAME) == 0);

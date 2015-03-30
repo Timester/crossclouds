@@ -73,11 +73,6 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void clearContainer(String container) {
-        // TODO finish
-    }
-
-    @Override
     public void deleteContainer(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
@@ -87,22 +82,6 @@ public class AzureBlobStore extends AbstractBlobStore {
         } catch (URISyntaxException | StorageException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean deleteContainerIfEmpty(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
-        try {
-            CloudBlobContainer containerReference = client.getContainerReference(container);
-
-            // TODO
-
-        } catch (URISyntaxException | StorageException e) {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     @Override
@@ -147,7 +126,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) {
-        // TODO finish
+        // TODO azure finish getBlob
         return null;
     }
 
@@ -173,7 +152,6 @@ public class AzureBlobStore extends AbstractBlobStore {
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             long counter = 0;
-            Set<String> content = new HashSet<>();
             for (ListBlobItem blobItem : containerReference.listBlobs()) {
                 counter++;
             }

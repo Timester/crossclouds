@@ -1,5 +1,7 @@
 package net.talqum.crossclouds.blobstorage.common;
 
+import java.util.Set;
+
 /**
  * Created by Imre on 2015.03.04..
  */
@@ -24,6 +26,13 @@ public abstract class AbstractBlobStore implements BlobStore {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void clearContainer(String container){
+        Set<String> blobs = listContainerContent(container);
+
+        removeBlobs(container, blobs);
     }
 
     @Override

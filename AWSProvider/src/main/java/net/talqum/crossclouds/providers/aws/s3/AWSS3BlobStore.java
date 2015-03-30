@@ -62,26 +62,23 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void clearContainer(String container) {
-        // TODO finish
-    }
-
-    @Override
     public void deleteContainer(String container) {
         ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteBucket(container);
     }
 
     @Override
-    public boolean deleteContainerIfEmpty(String container) {
-        // TODO finish
-        return false;
-    }
-
-    @Override
     public boolean blobExists(String container, String blobName) {
-        S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
-
-        return s3Object == null;
+        try {
+            ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
+            return true;
+        } catch (AmazonS3Exception s3Exception){
+            switch (s3Exception.getErrorCode()){
+                case "NoSuchKey":
+                    return false;
+                default:
+                    return false;
+            }
+        }
     }
 
     @Override
@@ -125,14 +122,16 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                     while ((read = s3Object.getObjectContent().read(bytes)) != -1) {
                         os.write(bytes, 0, read);
                     }
+
+                    Payload p = new FilePayload(f);
+                    return new DefaultBlob(blobName, p);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Payload p = new FilePayload(f);
-                return new DefaultBlob(blobName, p);
             }
         }
 
+        // TODO aws check getBlob
         return null;
     }
 

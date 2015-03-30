@@ -1,6 +1,5 @@
 package net.talqum.crossclouds.providers.aws.s3;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
@@ -18,8 +17,7 @@ public class DefaultAWSS3BlobStoreContext extends AbstractBlobStoreContext imple
         super();
         setBlobStore(new AWSS3BlobStore(this));
 
-        AWSCredentials creds = new BasicAWSCredentials(identity, secret);
-        s3Client = new AmazonS3Client(creds);
+        s3Client = new AmazonS3Client(new BasicAWSCredentials(identity, secret));
     }
 
     @Override
