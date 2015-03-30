@@ -68,8 +68,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean blobExists(String container, String blobName) {
-        try {
-            ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
+        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
             return true;
         } catch (AmazonS3Exception s3Exception){
             switch (s3Exception.getErrorCode()){
@@ -78,7 +77,10 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 default:
                     return false;
             }
+        } catch (IOException e){
+            return false;
         }
+
     }
 
     @Override
@@ -105,34 +107,36 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) {
-        S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName);
+        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
 
-        ObjectMetadata objectMetadata = s3Object.getObjectMetadata();
-        String contentType = objectMetadata.getContentType();
+            ObjectMetadata objectMetadata = s3Object.getObjectMetadata();
+            String contentType = objectMetadata.getContentType();
 
-        switch (contentType){
-            case "image/jpeg": {
-                File f = new File(s3Object.getKey());
-                try {
-                    OutputStream os = new FileOutputStream(f);
+            switch (contentType) {
+                case "image/jpeg": {
+                    File f = new File(s3Object.getKey());
+                    try (OutputStream os = new FileOutputStream(f)) {
+                        int read;
+                        byte[] bytes = new byte[1024];
 
-                    int read;
-                    byte[] bytes = new byte[1024];
+                        while ((read = s3Object.getObjectContent().read(bytes)) != -1) {
+                            os.write(bytes, 0, read);
+                        }
 
-                    while ((read = s3Object.getObjectContent().read(bytes)) != -1) {
-                        os.write(bytes, 0, read);
+                        Payload p = new FilePayload(f);
+                        return new DefaultBlob(blobName, p);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
-                    Payload p = new FilePayload(f);
-                    return new DefaultBlob(blobName, p);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
-        }
 
-        // TODO aws check getBlob
-        return null;
+            // TODO aws check getBlob
+            return null;
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
