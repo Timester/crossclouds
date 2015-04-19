@@ -1,5 +1,7 @@
 package net.talqum.crossclouds.blobstorage.common;
 
+import net.talqum.crossclouds.exceptions.ClientException;
+
 import java.util.Set;
 
 /**
@@ -29,14 +31,14 @@ public abstract class AbstractBlobStore implements BlobStore {
     }
 
     @Override
-    public void clearContainer(String container){
+    public void clearContainer(String container) throws ClientException {
         Set<String> blobs = listContainerContent(container);
 
         removeBlobs(container, blobs);
     }
 
     @Override
-    public void removeBlobs(String container, Iterable<String> blobNames) {
+    public void removeBlobs(String container, Iterable<String> blobNames) throws ClientException {
         for (String name : blobNames) {
             removeBlob(container, name);
         }

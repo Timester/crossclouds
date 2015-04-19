@@ -1,6 +1,6 @@
 package net.talqum.crossclouds.blobstorage.common;
 
-import net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException;
+import net.talqum.crossclouds.exceptions.ClientException;
 
 import java.util.Set;
 
@@ -35,11 +35,10 @@ public interface BlobStore {
 
     /**
      * Empties the given container.
-     * @throws net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException if the container is
-     * nonexistent
+     * @throws ClientException if a service or network error occures
      * @param container
      */
-    void clearContainer(String container) throws ContainerNotFoundException;
+    void clearContainer(String container) throws ClientException;
 
     /**
      * Deletes the given container.
@@ -67,9 +66,10 @@ public interface BlobStore {
      * Puts a Blob in the given container. If the container does not exist create it.
      * @param container name of the container to put the Blob in
      * @param blob the Blob to upload
+     * @throws ClientException if a service or network error occures
      * @return true if the upload was successful, false otherwise
      */
-    boolean putBlob(String container, Blob blob);
+    boolean putBlob(String container, Blob blob) throws ClientException;
 
     /**
      * Gets a blob with a given name from the given container.
@@ -83,15 +83,17 @@ public interface BlobStore {
      * Removes a blob from the given container.
      * @param container
      * @param blobName
+     * @throws ClientException if a service or network error occures
      */
-    void removeBlob(String container, String blobName);
+    void removeBlob(String container, String blobName) throws ClientException;
 
     /**
      * Removes multiple blobs from a given container.
      * @param container
      * @param blobNames
+     * @throws ClientException if a service or network error occures
      */
-    void removeBlobs(String container, Iterable<String> blobNames);
+    void removeBlobs(String container, Iterable<String> blobNames) throws ClientException;
 
     /**
      * Counts blobs in a container.
