@@ -34,45 +34,63 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean createContainer(String container) {
-        if(!containerExists(container)) {
-            ((DefaultAWSS3BlobStoreContext) context).getS3Client().createBucket(new CreateBucketRequest(container));
-            return true;
-        } else {
-            return false;
+    public boolean createContainer(String container) throws ClientException {
+        try{
+            if(!containerExists(container)) {
+                ((DefaultAWSS3BlobStoreContext) context).getS3Client().createBucket(new CreateBucketRequest(container));
+                return true;
+            } else {
+                return false;
+            }
+        } catch (AmazonServiceException ase) {
+            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICEUNAVAILABLE);
+        } catch (AmazonClientException ace){
+            throw new ClientException(ace.getMessage(), ClientErrorCodes.NONETWORK);
         }
     }
 
     @Override
-    public Set<String> listContainerContent(String container) {
-        AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
-        ObjectListing objectListing = client.listObjects(container);
-        List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
-        Set<String> names = new HashSet<>();
-
-        names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
-
-        boolean truncated = objectListing.isTruncated();
-
-        while(truncated){
-            ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
-            objectSummaries = objectListing.getObjectSummaries();
+    public Set<String> listContainerContent(String container) throws ClientException {
+        try{
+            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+            ObjectListing objectListing = client.listObjects(container);
+            List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
+            Set<String> names = new HashSet<>();
 
             names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
 
-            truncated = subListing.isTruncated();
+            boolean truncated = objectListing.isTruncated();
+
+            while(truncated){
+                ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
+                objectSummaries = objectListing.getObjectSummaries();
+
+                names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
+
+                truncated = subListing.isTruncated();
+            }
+
+            return names;
+        } catch (AmazonServiceException ase) {
+            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICEUNAVAILABLE);
+        } catch (AmazonClientException ace){
+            throw new ClientException(ace.getMessage(), ClientErrorCodes.NONETWORK);
         }
-
-        return names;
     }
 
     @Override
-    public void deleteContainer(String container) {
-        ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteBucket(container);
+    public void deleteContainer(String container) throws ClientException {
+        try{
+            ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteBucket(container);
+        } catch (AmazonServiceException ase) {
+            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICEUNAVAILABLE);
+        } catch (AmazonClientException ace){
+            throw new ClientException(ace.getMessage(), ClientErrorCodes.NONETWORK);
+        }
     }
 
     @Override
-    public boolean blobExists(String container, String blobName) {
+    public boolean blobExists(String container, String blobName) throws ClientException {
         try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
             return true;
         } catch (AmazonS3Exception s3Exception){
@@ -83,7 +101,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                     return false;
             }
         } catch (IOException e){
-            return false;
+            throw new ClientException(e.getMessage(), ClientErrorCodes.UNKNOWN);
         }
 
     }
@@ -135,7 +153,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 e.printStackTrace();
                 return null;
             }
-        } catch (Exception e){
+        } catch (IOException e){
             e.printStackTrace();
             return null;
         }
@@ -153,19 +171,25 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public long countBlobs(String container) {
-        AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
-        ObjectListing objectListing = client.listObjects(container);
-        long count = objectListing.getObjectSummaries().size();
-        boolean truncated = objectListing.isTruncated();
+    public long countBlobs(String container) throws ClientException {
+        try {
+            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+            ObjectListing objectListing = client.listObjects(container);
+            long count = objectListing.getObjectSummaries().size();
+            boolean truncated = objectListing.isTruncated();
 
-        while(truncated){
-            ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
-            count += subListing.getObjectSummaries().size();
-            truncated = subListing.isTruncated();
+            while(truncated){
+                ObjectListing subListing = client.listNextBatchOfObjects(objectListing);
+                count += subListing.getObjectSummaries().size();
+                truncated = subListing.isTruncated();
+            }
+
+            return count;
+        }catch (AmazonServiceException ase) {
+            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICEUNAVAILABLE);
+        } catch (AmazonClientException ace){
+            throw new ClientException(ace.getMessage(), ClientErrorCodes.NONETWORK);
         }
-
-        return count;
     }
 
 }

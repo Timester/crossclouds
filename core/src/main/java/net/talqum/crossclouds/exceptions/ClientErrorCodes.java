@@ -7,5 +7,5 @@ package net.talqum.crossclouds.exceptions;
  * Time: 10:31
  */
 public enum ClientErrorCodes {
-    NONETWORK, SERVICEUNAVAILABLE
+    UNKNOWN, NONETWORK, SERVICEUNAVAILABLE
 }

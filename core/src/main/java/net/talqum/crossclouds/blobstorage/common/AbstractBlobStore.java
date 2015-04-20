@@ -21,7 +21,7 @@ public abstract class AbstractBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteContainerIfEmpty(String container){
+    public boolean deleteContainerIfEmpty(String container) throws ClientException {
         if(countBlobs(container) == 0){
             deleteContainer(container);
             return true;

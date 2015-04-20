@@ -40,26 +40,32 @@ public class AWSS3BlobStoreTest {
             ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
         } catch (ClientException e) {
             e.printStackTrace();
-        } catch (Exception e){
-            System.out.println("No bucket to delete");
         }
-
-
     }
 
     @Test
     public void testCreateContainer(){
-        assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
-        assertTrue(ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1));
-        assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+        try {
+            assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+        }catch (ClientException e){
+            e.printStackTrace();
+            fail();
+        }
     }
 
     @Test
     public void testDeleteContainer(){
-        ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1);
-        assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
-        ctx.getBlobStore().deleteContainer(AWSFixtures.BUCKET_NAME + 1);
-        assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+        try{
+            ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1);
+            assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+            ctx.getBlobStore().deleteContainer(AWSFixtures.BUCKET_NAME + 1);
+            assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+        }catch (ClientException e){
+            e.printStackTrace();
+            fail();
+        }
     }
 
     @Test
@@ -94,77 +100,77 @@ public class AWSS3BlobStoreTest {
 
     @Test
     public void testBlobExist(){
-        boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        assertFalse(exists);
+        try{
+            boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
+            assertFalse(exists);
 
-        Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
-        try {
+            Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
+
             ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_STRING, pl));
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
-        }
 
-        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        assertTrue(exists);
+            exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
+            assertTrue(exists);
 
-        try {
             ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
+
+            exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
+            assertFalse(exists);
+        }catch (ClientException e){
+            e.printStackTrace();
+            fail();
         }
-        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        assertFalse(exists);
     }
 
     @Test
     public void testGetBlob(){
-        // TEXT and IMAGE file upload
-        Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
-        try {
+        try{
+            // TEXT and IMAGE file upload
+            Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
+
             ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_STRING, pl));
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
-        }
 
-        boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        assertTrue(exists);
+            boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
+            assertTrue(exists);
 
-        try {
             pl = new FilePayload(new File(ClassLoader.getSystemResource(AWSFixtures.TEST_IMAGE).toURI()));
             ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_IMAGE, pl));
 
             exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
             assertTrue(exists);
+
+            // DOWNLOAD
+            Blob blob1 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
+            Blob blob2 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+
+            assertNotNull(blob1);
+            assertNotNull(blob2);
+            assertNotNull(blob1.getPayload().getRawContent());
+            assertNotNull(blob2.getPayload().getRawContent());
+            assertEquals(8, blob1.getPayload().getContentLength());
+            assertEquals(39482, blob2.getPayload().getContentLength());
+        }catch (ClientException e){
+            e.printStackTrace();
+            fail();
         } catch (URISyntaxException e) {
             e.printStackTrace();
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
+            fail();
         }
-
-        // DOWNLOAD
-        Blob blob1 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
-        Blob blob2 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
-
-        assertNotNull(blob1);
-        assertNotNull(blob2);
-        assertNotNull(blob1.getPayload().getRawContent());
-        assertNotNull(blob2.getPayload().getRawContent());
-        assertEquals(8, blob1.getPayload().getContentLength());
-        assertEquals(39482, blob2.getPayload().getContentLength());
     }
 
     @Test
     public void testDeleteBlob(){
-        boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
-        assertTrue(exists);
-        try {
-            ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
-        }
+        try{
+            boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+            assertTrue(exists);
 
-        exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
-        assertFalse(exists);
+            ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+
+            exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
+            assertFalse(exists);
+        }catch (ClientException e){
+            e.printStackTrace();
+            fail();
+        }
     }
 
     @Test
