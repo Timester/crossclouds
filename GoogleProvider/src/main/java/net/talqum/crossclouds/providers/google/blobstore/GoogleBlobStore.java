@@ -30,18 +30,8 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void clearContainer(String container) {
-        // TODO finish
-    }
-
-    @Override
     public void deleteContainer(String container) {
 
-    }
-
-    @Override
-    public boolean deleteContainerIfEmpty(String container) {
-        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package net.talqum.crossclouds.blobstorage.common;
 
 import net.talqum.crossclouds.exceptions.ClientException;
+import net.talqum.crossclouds.exceptions.ProviderException;
 
 import java.util.Set;
 
@@ -91,7 +92,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    Blob getBlob(String container, String blobName);
+    Blob getBlob(String container, String blobName) throws ClientException;
 
     /**
      * Removes a blob from the given container.

@@ -135,7 +135,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public Blob getBlob(String container, String blobName) {
         try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
-
             File f = File.createTempFile(blobName.substring(0, blobName.lastIndexOf('.')),
                     blobName.substring(blobName.lastIndexOf('.')));
 
@@ -149,9 +148,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
                 Payload p = new FilePayload(f);
                 return new DefaultBlob(blobName, p);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
             }
         } catch (IOException e){
             e.printStackTrace();
