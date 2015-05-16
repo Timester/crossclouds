@@ -87,7 +87,7 @@ public class CreateContainerUnitTest {
             blobStore.createContainer(AWSFixtures.BUCKET_NAME);
         } catch (ClientException e) {
             assertTrue(e instanceof ProviderException);
-            assertTrue(e.getErrorCode().equals(ClientErrorCodes.SERVICEUNAVAILABLE));
+            assertTrue(e.getErrorCode().equals(ClientErrorCodes.SERVICE_UNAVAILABLE));
         }
 
         verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);
@@ -104,7 +104,7 @@ public class CreateContainerUnitTest {
             blobStore.createContainer(AWSFixtures.BUCKET_NAME);
         } catch (ClientException e) {
             assertTrue(e instanceof ClientException);
-            assertTrue(e.getErrorCode().equals(ClientErrorCodes.NONETWORK));
+            assertTrue(e.getErrorCode().equals(ClientErrorCodes.NO_NETWORK));
         }
 
         verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);

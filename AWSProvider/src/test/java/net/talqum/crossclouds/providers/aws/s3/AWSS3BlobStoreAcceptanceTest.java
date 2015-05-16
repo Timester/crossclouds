@@ -7,7 +7,9 @@ import net.talqum.crossclouds.blobstorage.common.Payload;
 import net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
+import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
+import net.talqum.crossclouds.exceptions.ProviderException;
 import net.talqum.crossclouds.providers.ContextFactory;
 import net.talqum.crossclouds.providers.aws.fixtures.AWSFixtures;
 import org.junit.BeforeClass;
@@ -148,6 +150,21 @@ public class AWSS3BlobStoreAcceptanceTest {
             assertNotNull(blob2.getPayload().getRawContent());
             assertEquals(8, blob1.getPayload().getContentLength());
             assertEquals(39482, blob2.getPayload().getContentLength());
+
+            // DOWNLOAD NONEXISTENT
+            try {
+                Blob blob3 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, "Nonexistent");
+            } catch (ClientException ex){
+                assertTrue(ex instanceof ProviderException);
+                assertTrue(ex.getErrorCode().equals(ClientErrorCodes.NO_SUCH_KEY));
+            }
+
+            try {
+                Blob blob3 = ctx.getBlobStore().getBlob("Nonexistent", "Nonexistent");
+            } catch (ClientException ex){
+                assertTrue(ex instanceof ProviderException);
+                assertTrue(ex.getErrorCode().equals(ClientErrorCodes.NO_SUCH_CONTAINER));
+            }
         }catch (ClientException e){
             e.printStackTrace();
             fail();
