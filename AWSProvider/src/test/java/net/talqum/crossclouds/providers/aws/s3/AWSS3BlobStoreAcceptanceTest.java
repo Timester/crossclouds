@@ -152,19 +152,11 @@ public class AWSS3BlobStoreAcceptanceTest {
             assertEquals(39482, blob2.getPayload().getContentLength());
 
             // DOWNLOAD NONEXISTENT
-            try {
-                Blob blob3 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, "Nonexistent");
-            } catch (ClientException ex){
-                assertTrue(ex instanceof ProviderException);
-                assertTrue(ex.getErrorCode().equals(ClientErrorCodes.NO_SUCH_KEY));
-            }
+            Blob blob3 = ctx.getBlobStore().getBlob(AWSFixtures.BUCKET_NAME, "Nonexistent");
+            assertNull(blob3);
 
-            try {
-                Blob blob3 = ctx.getBlobStore().getBlob("Nonexistent", "Nonexistent");
-            } catch (ClientException ex){
-                assertTrue(ex instanceof ProviderException);
-                assertTrue(ex.getErrorCode().equals(ClientErrorCodes.NO_SUCH_CONTAINER));
-            }
+            Blob blob4 = ctx.getBlobStore().getBlob("Nonexistent", "Nonexistent");
+            assertNull(blob4);
         }catch (ClientException e){
             e.printStackTrace();
             fail();

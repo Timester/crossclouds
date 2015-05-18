@@ -9,7 +9,7 @@ public abstract class AbstractBlobStoreContext extends AbstractService implement
 
     private BlobStore blobStore;
 
-    protected AbstractBlobStoreContext() { }
+    protected AbstractBlobStoreContext() {}
 
     protected void setBlobStore(BlobStore bs){
         this.blobStore = bs;

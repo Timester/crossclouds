@@ -1,8 +1,16 @@
 package net.talqum.crossclouds.providers;
 
+import com.google.common.reflect.TypeToken;
+import net.talqum.crossclouds.Service;
 import net.talqum.crossclouds.common.Context;
 import net.talqum.crossclouds.common.ProviderMetadata;
 import net.talqum.crossclouds.exceptions.ProviderNotFoundException;
+import net.talqum.crossclouds.exceptions.ServiceNotSupportedException;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 
 /**
  * Created by Imre on 2015.03.07..
@@ -14,12 +22,7 @@ public class ContextFactory {
     private ProviderMetadata providerMetadata;
 
     private ContextFactory(String provider) {
-        try {
-            this.providerMetadata = Providers.find(provider);
-            System.out.println(providerMetadata.getClass());
-        } catch (ProviderNotFoundException e) {
-            e.printStackTrace();
-        }
+        this.providerMetadata = Providers.find(provider);
     }
 
     public static ContextFactory newFactory(String provider){
@@ -32,16 +35,27 @@ public class ContextFactory {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     public <C extends Context> C build(Class<C> contextType) {
 
+        TypeToken<C> cTypeToken = typeToken(contextType);
+
         try {
+            List<TypeToken<? extends Service>> services = providerMetadata.getServices();
+            Class<?> rawType = null;
 
-            return (C)providerMetadata.getServices().get(0).getRawType().getConstructor(String.class, String.class).newInstance(identity, secret);
+            for (TypeToken<? extends Service> serviceTypeToken : services) {
+                if(cTypeToken.isAssignableFrom(serviceTypeToken)){
+                    rawType = serviceTypeToken.getRawType();
+                }
+            }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            if (rawType != null) {
+                return (C)rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
+            } else {
+                throw new ServiceNotSupportedException("No service found for the given criteria.");
+            }
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+            throw new ServiceNotSupportedException(e);
         }
     }
 }
