@@ -41,7 +41,7 @@ public class AWSS3BlobStoreAcceptanceTest {
             ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
             ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
         } catch (ClientException e) {
-            e.printStackTrace();
+            System.err.println("Error occured in the init section. No further action needed.");
         }
     }
 
