@@ -1,10 +1,8 @@
 package net.talqum.crossclouds.providers;
 
 import com.google.common.reflect.TypeToken;
-import net.talqum.crossclouds.Service;
 import net.talqum.crossclouds.common.Context;
 import net.talqum.crossclouds.common.ProviderMetadata;
-import net.talqum.crossclouds.exceptions.ProviderNotFoundException;
 import net.talqum.crossclouds.exceptions.ServiceNotSupportedException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,10 +38,10 @@ public class ContextFactory {
         TypeToken<C> cTypeToken = typeToken(contextType);
 
         try {
-            List<TypeToken<? extends Service>> services = providerMetadata.getServices();
+            List<TypeToken<? extends Context>> services = providerMetadata.getServices();
             Class<?> rawType = null;
 
-            for (TypeToken<? extends Service> serviceTypeToken : services) {
+            for (TypeToken<? extends Context> serviceTypeToken : services) {
                 if(cTypeToken.isAssignableFrom(serviceTypeToken)){
                     rawType = serviceTypeToken.getRawType();
                 }

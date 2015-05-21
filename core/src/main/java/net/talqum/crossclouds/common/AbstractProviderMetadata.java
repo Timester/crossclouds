@@ -1,7 +1,6 @@
 package net.talqum.crossclouds.common;
 
 import com.google.common.reflect.TypeToken;
-import net.talqum.crossclouds.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  */
 public abstract class AbstractProviderMetadata implements ProviderMetadata {
     private String id;
-    protected List<TypeToken<? extends Service>> services = new ArrayList<>();
+    protected List<TypeToken<? extends Context>> services = new ArrayList<>();
 
     public AbstractProviderMetadata(String id) {
         this.id = id;
@@ -23,7 +22,7 @@ public abstract class AbstractProviderMetadata implements ProviderMetadata {
     }
 
     @Override
-    public List<TypeToken<? extends Service>> getServices() {
+    public List<TypeToken<? extends Context>> getServices() {
         return services;
     }
 }

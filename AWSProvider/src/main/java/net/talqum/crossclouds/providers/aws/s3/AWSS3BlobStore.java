@@ -30,7 +30,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean containerExists(String container) {
-        return ((DefaultAWSS3BlobStoreContext)context).getS3Client().doesBucketExist(container);
+        return ((DefaultAWSS3BlobStoreContext)context).getClient().doesBucketExist(container);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             if (containerExists(container)) {
                 return false;
             } else {
-                ((DefaultAWSS3BlobStoreContext) context).getS3Client().createBucket(new CreateBucketRequest(container));
+                ((DefaultAWSS3BlobStoreContext) context).getClient().createBucket(new CreateBucketRequest(container));
                 return true;
             }
         } catch (AmazonServiceException ase) {
@@ -52,7 +52,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public Set<String> listContainerContent(String container) throws ClientException {
         try{
-            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getClient();
             ObjectListing objectListing = client.listObjects(container);
             List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
             Set<String> names = new HashSet<>();
@@ -81,7 +81,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public void deleteContainer(String container) throws ClientException {
         try{
-            ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteBucket(container);
+            ((DefaultAWSS3BlobStoreContext) context).getClient().deleteBucket(container);
         } catch (AmazonServiceException ase) {
             throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
@@ -91,7 +91,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean blobExists(String container, String blobName) throws ClientException {
-        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
+        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getClient().getObject(container, blobName)) {
             return true;
         } catch (AmazonS3Exception s3Exception){
             switch (s3Exception.getErrorCode()){
@@ -116,7 +116,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentLength(blob.getPayload().getContentLength());
             ((DefaultAWSS3BlobStoreContext) context)
-                    .getS3Client()
+                    .getClient()
                     .putObject(new PutObjectRequest(container, blob.getName(),
                             blob.getPayload().openStream(),
                             objectMetadata));
@@ -133,7 +133,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) throws ClientException {
-        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getS3Client().getObject(container, blobName)) {
+        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getClient().getObject(container, blobName)) {
             File f = File.createTempFile(blobName.substring(0, blobName.lastIndexOf('.')),
                     blobName.substring(blobName.lastIndexOf('.')));
 
@@ -167,7 +167,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public void removeBlob(String container, String blobName) throws ClientException {
         try {
-            ((DefaultAWSS3BlobStoreContext) context).getS3Client().deleteObject(container, blobName);
+            ((DefaultAWSS3BlobStoreContext) context).getClient().deleteObject(container, blobName);
         }catch (AmazonServiceException ase) {
             throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
@@ -178,7 +178,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public long countBlobs(String container) throws ClientException {
         try {
-            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getS3Client();
+            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getClient();
             ObjectListing objectListing = client.listObjects(container);
             long count = objectListing.getObjectSummaries().size();
             boolean truncated = objectListing.isTruncated();

@@ -1,11 +1,9 @@
 package net.talqum.crossclouds.blobstorage.common;
 
-import net.talqum.crossclouds.AbstractService;
-
 /**
  * Created by Imre on 2015.03.04..
  */
-public abstract class AbstractBlobStoreContext extends AbstractService implements BlobStoreContext {
+public abstract class AbstractBlobStoreContext implements BlobStoreContext {
 
     private BlobStore blobStore;
 

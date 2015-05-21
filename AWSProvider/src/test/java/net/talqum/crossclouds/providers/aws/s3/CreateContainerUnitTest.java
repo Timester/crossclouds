@@ -43,7 +43,7 @@ public class CreateContainerUnitTest {
 
     @Before
     public void init(){
-        when(mockContext.getS3Client()).thenReturn(client);
+        when(mockContext.getClient()).thenReturn(client);
     }
 
     @Test

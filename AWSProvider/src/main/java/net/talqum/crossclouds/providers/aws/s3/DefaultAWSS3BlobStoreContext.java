@@ -25,7 +25,7 @@ public class DefaultAWSS3BlobStoreContext extends AbstractBlobStoreContext imple
         return AWSS3BlobStore.class.cast(super.getBlobStore());
     }
 
-    public AmazonS3Client getS3Client() {
+    public AmazonS3Client getClient() {
         return s3Client;
     }
 
