@@ -13,8 +13,8 @@ public class ClientException extends Exception {
         this.errorCode = errorCode;
     }
 
-    public ClientException(String message, ClientErrorCodes errorCode) {
-        super(message);
+    public ClientException(Exception e, ClientErrorCodes errorCode){
+        super(e);
         this.errorCode = errorCode;
     }
 

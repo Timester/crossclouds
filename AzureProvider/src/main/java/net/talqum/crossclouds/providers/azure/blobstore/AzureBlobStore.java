@@ -39,9 +39,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             return containerReference.exists();
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -53,9 +53,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             return containerReference.createIfNotExists();
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -72,9 +72,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             }
             return content;
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -86,9 +86,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             containerReference.deleteIfExists();
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -102,9 +102,9 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             return blockBlobReference.exists();
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -124,9 +124,9 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             return true;
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (IOException e){
             e.printStackTrace();
             return false;
@@ -153,9 +153,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             e.printStackTrace();
             return null;
         } catch (StorageException e) {
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (URISyntaxException e) {
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         }
     }
 
@@ -169,9 +169,9 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             blockBlobReference.deleteIfExists();
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 
@@ -187,9 +187,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             }
             return counter;
         } catch (URISyntaxException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
         }
     }
 

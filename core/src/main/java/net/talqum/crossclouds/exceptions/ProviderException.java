@@ -12,7 +12,7 @@ public class ProviderException extends ClientException {
         super(errorCode);
     }
 
-    public ProviderException(String message, ClientErrorCodes errorCode) {
-        super(message, errorCode);
+    public ProviderException(Exception e, ClientErrorCodes errorCode) {
+        super(e, errorCode);
     }
 }

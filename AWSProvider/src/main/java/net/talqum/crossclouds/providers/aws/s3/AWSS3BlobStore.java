@@ -43,9 +43,9 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 return true;
             }
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }
 
@@ -72,9 +72,9 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
             return names;
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }
 
@@ -83,9 +83,9 @@ public class AWSS3BlobStore extends AbstractBlobStore {
         try{
             ((DefaultAWSS3BlobStoreContext) context).getClient().deleteBucket(container);
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }
 
@@ -101,7 +101,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                     return false;
             }
         } catch (IOException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.UNKNOWN);
+            throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
 
     }
@@ -123,11 +123,11 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
             return true;
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         } catch (IOException ioe){
-            throw new ClientException(ioe.getMessage(), ClientErrorCodes.IO_ERROR);
+            throw new ClientException(ioe, ClientErrorCodes.IO_ERROR);
         }
     }
 
@@ -155,12 +155,12 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 case "NoSuchBucket":
                     return null;
                 default:
-                    throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+                    throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
             }
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         } catch (IOException e){
-            throw new ClientException(e.getMessage(), ClientErrorCodes.IO_ERROR);
+            throw new ClientException(e, ClientErrorCodes.IO_ERROR);
         }
     }
 
@@ -169,9 +169,9 @@ public class AWSS3BlobStore extends AbstractBlobStore {
         try {
             ((DefaultAWSS3BlobStoreContext) context).getClient().deleteObject(container, blobName);
         }catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }
 
@@ -191,9 +191,9 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
             return count;
         }catch (AmazonServiceException ase) {
-            throw new ProviderException(ase.getMessage(), ClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (AmazonClientException ace){
-            throw new ClientException(ace.getMessage(), ClientErrorCodes.NO_NETWORK);
+            throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }
 
