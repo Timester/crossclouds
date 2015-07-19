@@ -10,10 +10,11 @@ import java.util.List;
  */
 public abstract class AbstractProviderMetadata implements ProviderMetadata {
     private String id;
-    protected List<TypeToken<? extends Context>> services = new ArrayList<>();
+    protected List<TypeToken<? extends Context>> services;
 
     public AbstractProviderMetadata(String id) {
         this.id = id;
+        this.services = new ArrayList<>();
     }
 
     @Override
