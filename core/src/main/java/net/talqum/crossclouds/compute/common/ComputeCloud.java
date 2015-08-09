@@ -1,5 +1,7 @@
 package net.talqum.crossclouds.compute.common;
 
+import net.talqum.crossclouds.compute.vm.CreateRequest;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Imre
@@ -9,5 +11,5 @@ package net.talqum.crossclouds.compute.common;
 public interface ComputeCloud {
     ComputeCloudContext getContext();
 
-    
+    void createInstance(CreateRequest cr);
 }

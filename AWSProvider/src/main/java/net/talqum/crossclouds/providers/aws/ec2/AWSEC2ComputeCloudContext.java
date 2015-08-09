@@ -9,4 +9,7 @@ import net.talqum.crossclouds.compute.common.ComputeCloudContext;
  * Time: 15:05
  */
 public interface AWSEC2ComputeCloudContext extends ComputeCloudContext {
+
+    @Override
+    AWSEC2ComputeCloud getComputeCloud();
 }
