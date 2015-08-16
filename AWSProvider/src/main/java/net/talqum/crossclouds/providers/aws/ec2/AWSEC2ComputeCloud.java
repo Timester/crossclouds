@@ -13,6 +13,7 @@ import net.talqum.crossclouds.compute.vm.CreateRequest;
  * Time: 18:24
  */
 public class AWSEC2ComputeCloud extends AbstractComputeCloud {
+
     protected AWSEC2ComputeCloud(ComputeCloudContext context) {
         super(context);
     }

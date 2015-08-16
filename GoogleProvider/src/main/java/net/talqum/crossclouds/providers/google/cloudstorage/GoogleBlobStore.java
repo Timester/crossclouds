@@ -1,8 +1,12 @@
-package net.talqum.crossclouds.providers.google.blobstore;
+package net.talqum.crossclouds.providers.google.cloudstorage;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.api.services.storage.Storage;
+import com.google.api.services.storage.model.Bucket;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
 
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -16,7 +20,22 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean containerExists(String container) {
-        return false;
+        try {
+            Storage.Buckets.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().buckets().get(container);
+            get.setProjection("full");
+            Bucket bucket = get.execute();
+
+            if (bucket != null) {
+                if(!Strings.isNullOrEmpty(bucket.getName())){
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException e) {
+
+            // TODO
+            return false;
+        }
     }
 
     @Override

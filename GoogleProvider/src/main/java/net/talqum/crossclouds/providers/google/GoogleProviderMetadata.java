@@ -1,7 +1,7 @@
 package net.talqum.crossclouds.providers.google;
 
 import net.talqum.crossclouds.common.AbstractProviderMetadata;
-import net.talqum.crossclouds.providers.google.blobstore.DefaultGoogleBlobStoreContext;
+import net.talqum.crossclouds.providers.google.cloudstorage.DefaultGoogleBlobStoreContext;
 
 import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 

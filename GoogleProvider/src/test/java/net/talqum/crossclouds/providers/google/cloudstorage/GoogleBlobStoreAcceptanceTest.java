@@ -1,10 +1,9 @@
-package net.talqum.crossclouds.providers.google.blobstore;
+package net.talqum.crossclouds.providers.google.cloudstorage;
 
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.BlobStoreContext;
 import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
 import net.talqum.crossclouds.blobstorage.common.Payload;
-import net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
 import net.talqum.crossclouds.exceptions.ClientException;

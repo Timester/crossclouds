@@ -1,5 +1,6 @@
 package net.talqum.crossclouds.providers;
 
+import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import net.talqum.crossclouds.common.Context;
 import net.talqum.crossclouds.common.ProviderMetadata;
@@ -16,6 +17,7 @@ import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 public class ContextFactory {
     private String identity;
     private String secret;
+    private String credentialsFilePath;
 
     private ProviderMetadata providerMetadata;
 
@@ -30,6 +32,11 @@ public class ContextFactory {
     public ContextFactory credentials(String identity, String secret){
         this.identity = identity;
         this.secret = secret;
+        return this;
+    }
+
+    public ContextFactory credentials(String credentialsFilePath) {
+        this.credentialsFilePath = credentialsFilePath;
         return this;
     }
 
@@ -48,7 +55,11 @@ public class ContextFactory {
             }
 
             if (rawType != null) {
-                return (C)rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
+                if(Strings.isNullOrEmpty(credentialsFilePath)) {
+                    return (C) rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
+                } else {
+                    return (C) rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
+                }
             } else {
                 throw new ServiceNotSupportedException("No service found for the given criteria.");
             }

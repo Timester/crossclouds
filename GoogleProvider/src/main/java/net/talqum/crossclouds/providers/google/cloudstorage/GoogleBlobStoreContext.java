@@ -1,4 +1,4 @@
-package net.talqum.crossclouds.providers.google.blobstore;
+package net.talqum.crossclouds.providers.google.cloudstorage;
 
 import net.talqum.crossclouds.blobstorage.common.BlobStoreContext;
 
