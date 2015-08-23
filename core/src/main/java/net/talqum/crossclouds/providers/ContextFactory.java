@@ -58,7 +58,7 @@ public class ContextFactory {
                 if(Strings.isNullOrEmpty(credentialsFilePath)) {
                     return (C) rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
                 } else {
-                    return (C) rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
+                    return (C) rawType.getConstructor(String.class, String.class).newInstance(credentialsFilePath);
                 }
             } else {
                 throw new ServiceNotSupportedException("No service found for the given criteria.");
