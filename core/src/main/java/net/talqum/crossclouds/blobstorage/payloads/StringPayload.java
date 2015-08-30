@@ -1,6 +1,7 @@
 package net.talqum.crossclouds.blobstorage.payloads;
 
 import com.google.common.base.Charsets;
+import com.google.common.net.MediaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ public class StringPayload extends AbstractPayload<String> {
     public StringPayload(String data) {
         super(data, data.getBytes(Charsets.UTF_8).length);
         this.bytes = data.getBytes(Charsets.UTF_8);
+        this.contentType = MediaType.ANY_TEXT_TYPE;
     }
 
     @Override

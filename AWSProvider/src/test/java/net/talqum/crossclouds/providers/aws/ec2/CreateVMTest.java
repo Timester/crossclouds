@@ -12,5 +12,4 @@ import net.talqum.crossclouds.providers.aws.ec2.util.EC2InstanceCreateRequest;
 public class CreateVMTest {
 
     CreateRequest2 cr = new EC2InstanceCreateRequest();
-    cr.setName("alma");
 }

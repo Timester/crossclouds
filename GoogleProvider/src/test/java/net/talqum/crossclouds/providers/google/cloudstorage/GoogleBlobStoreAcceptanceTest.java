@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +29,8 @@ public class GoogleBlobStoreAcceptanceTest {
     public static void setCtx(){
         ctx = ContextFactory
                 .newFactory("google")
-                .credentials(GoogleFixtures.ACC_ID, GoogleFixtures.ACC_SECRET)
+                .credentials(GoogleFixtures.GOOGLE_CREDENTIALS)
+                .applicationName(GoogleFixtures.APP_ID)
                 .build(BlobStoreContext.class);
     }
 
@@ -45,32 +47,70 @@ public class GoogleBlobStoreAcceptanceTest {
     }
 
     @Test
-    public void createContainer(){
-        try{
+    public void ContainerExists() {
+        try {
             assertFalse(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
-            assertTrue(ctx.getBlobStore().createContainer(GoogleFixtures.BUCKET_NAME + 1));
-            assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
-        }catch (ClientException e){
+            assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.EXISTING_BUCKET_NAME));
+        } catch (ClientException e) {
             fail();
         }
     }
 
     @Test
+    public void createContainer(){
+        try {
+            assertFalse(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().createContainer(GoogleFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
+        } catch (ClientException e){
+            fail();
+        }
+    }
+
+    @Test
+    public void listContainerContent() {
+        try {
+            Set<String> content = ctx.getBlobStore().listContainerContent(GoogleFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, content.size());
+            assertTrue(content.contains(GoogleFixtures.TEST_IMAGE));
+            assertTrue(content.contains(GoogleFixtures.TEST_STRING));
+
+            ctx.getBlobStore().listContainerContent("nonexistent_container");
+        } catch (ClientException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void clearContainer(){
+        try {
+            ctx.getBlobStore().clearContainer(GoogleFixtures.BUCKET_NAME);
+
+            assertTrue(ctx.getBlobStore().countBlobs(GoogleFixtures.BUCKET_NAME) == 0);
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
     public void deleteContainer(){
-        try{
+        try {
             ctx.getBlobStore().createContainer(GoogleFixtures.BUCKET_NAME + 2);
             assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 2));
 
             ctx.getBlobStore().deleteContainer(GoogleFixtures.BUCKET_NAME + 2);
             assertFalse(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 2));
-        }catch (ClientException e){
+
+            ctx.getBlobStore().deleteContainer("nonexistent_container");
+        } catch (ClientException e){
             fail();
         }
     }
 
     @Test
     public void putFileBlob(){
-        Payload pl = null;
+        Payload pl;
         try {
             pl = new FilePayload(new File(ClassLoader.getSystemResource(GoogleFixtures.TEST_IMAGE).toURI()));
 
@@ -120,6 +160,21 @@ public class GoogleBlobStoreAcceptanceTest {
     }
 
     @Test
+    public void countBlobs() {
+        try {
+            long blobs = ctx.getBlobStore().countBlobs(GoogleFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, blobs);
+
+            blobs = ctx.getBlobStore().countBlobs("nonexistent_bucket");
+
+            assertEquals(0, blobs);
+        } catch (ClientException e) {
+            fail();
+        }
+    }
+
+    @Test
     public void testGetBlob(){
         try{
             // TEXT and IMAGE file upload
@@ -145,16 +200,14 @@ public class GoogleBlobStoreAcceptanceTest {
             assertNotNull(blob2.getPayload().getRawContent());
             assertEquals(8, blob1.getPayload().getContentLength());
             assertEquals(39482, blob2.getPayload().getContentLength());
-        }catch (ClientException e){
-            fail();
-        } catch (URISyntaxException e) {
+        } catch (ClientException | URISyntaxException e) {
             fail();
         }
     }
 
     @Test
     public void testDeleteBlob(){
-        try{
+        try {
             boolean exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_IMAGE);
 
             if(!exists){
@@ -167,21 +220,10 @@ public class GoogleBlobStoreAcceptanceTest {
 
             exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_IMAGE);
             assertFalse(exists);
-        }catch (ClientException e){
+        } catch (ClientException e) {
             fail();
         } catch (URISyntaxException e) {
             fail();
-        }
-    }
-
-    @Test
-    public void clearContainer(){
-        try {
-            ctx.getBlobStore().clearContainer(GoogleFixtures.BUCKET_NAME);
-
-            assertTrue(ctx.getBlobStore().countBlobs(GoogleFixtures.BUCKET_NAME) == 0);
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
         }
     }
 

@@ -20,7 +20,6 @@ public class DefaultBlob implements Blob {
         DefaultBlob that = (DefaultBlob) o;
 
         return !(name != null ? !name.equals(that.name) : that.name != null);
-
     }
 
     @Override

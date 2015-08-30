@@ -1,5 +1,7 @@
 package net.talqum.crossclouds.blobstorage.payloads;
 
+import com.google.common.net.MediaType;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +17,13 @@ public class FilePayload extends AbstractPayload<File> {
     public FilePayload(File data) {
         super(data, data.length());
         checkNotNull(data, "content");
+        this.contentType = MediaType.ANY_TYPE;
+    }
+
+    public FilePayload(File data, MediaType contentType) {
+        super(data, data.length());
+        checkNotNull(data, "content");
+        this.contentType = contentType;
     }
 
     @Override

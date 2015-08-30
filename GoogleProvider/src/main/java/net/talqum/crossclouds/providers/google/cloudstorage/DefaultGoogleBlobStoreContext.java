@@ -10,12 +10,15 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.client.util.store.MemoryDataStoreFactory;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageScopes;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
+import net.talqum.crossclouds.exceptions.ClientErrorCodes;
+import net.talqum.crossclouds.exceptions.ClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
@@ -29,22 +32,29 @@ import java.util.Set;
  */
 public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext implements GoogleBlobStoreContext {
 
+    final Logger log = LoggerFactory.getLogger(DefaultGoogleBlobStoreContext.class);
+
     private static String CREDENTIALS_FILE_PATH = "google_secrets.json";
-    private static FileDataStoreFactory dataStoreFactory;
+    private static MemoryDataStoreFactory dataStoreFactory;
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
 
     private final Storage cloudStorageClient;
+    final String applicationName;
 
-    public DefaultGoogleBlobStoreContext(String appName, String credentialsFilePath) throws URISyntaxException, InvalidKeyException{
+    public DefaultGoogleBlobStoreContext(String applicationName, String credentialsFilePath) throws URISyntaxException, InvalidKeyException{
         super();
+
+        log.info("Initializing Google Blobstorecontext");
+
+        this.applicationName = applicationName;
 
         Credential credential = null;
         CREDENTIALS_FILE_PATH = credentialsFilePath;
 
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            dataStoreFactory = new FileDataStoreFactory(new File("."));
+            dataStoreFactory = new MemoryDataStoreFactory();
 
             credential = authorize();
         } catch (GeneralSecurityException e) {
@@ -55,8 +65,11 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
             e.printStackTrace();
         }
 
+        setBlobStore(new GoogleBlobStore(this));
+
         cloudStorageClient = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(appName).build();
+                .setApplicationName(applicationName)
+                .build();
     }
 
     @Override
@@ -75,21 +88,22 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
 
     private static Credential authorize() throws Exception {
         // Load client secrets.
-        GoogleClientSecrets clientSecrets = null;
+        GoogleClientSecrets clientSecrets;
         try {
             clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-                    new InputStreamReader(DefaultGoogleBlobStoreContext.class.getResourceAsStream(
-                            String.format("/%s", CREDENTIALS_FILE_PATH)
-                    )));
-            if (clientSecrets.getDetails().getClientId() == null ||
-                    clientSecrets.getDetails().getClientSecret() == null) {
+                    new InputStreamReader(
+                            DefaultGoogleBlobStoreContext.class.getResourceAsStream(
+                                String.format("/%s", CREDENTIALS_FILE_PATH)
+                            )
+                    )
+            );
+
+            if (clientSecrets.getDetails().getClientId() == null || clientSecrets.getDetails().getClientSecret() == null) {
                 throw new Exception("client_secrets not well formed.");
             }
+
         } catch (Exception e) {
-            System.out.println("Problem loading client_secrets.json file. Make sure it exists, you are " +
-                    "loading it with the right path, and a client ID and client secret are " +
-                    "defined in it.\n" + e.getMessage());
-            System.exit(1);
+            throw new ClientException(ClientErrorCodes.UNKNOWN);
         }
 
         // Set up authorization code flow.
