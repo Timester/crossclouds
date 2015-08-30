@@ -4,7 +4,6 @@ import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.BlobStoreContext;
 import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
 import net.talqum.crossclouds.blobstorage.common.Payload;
-import net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
 import net.talqum.crossclouds.exceptions.ClientException;
@@ -16,6 +15,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -46,13 +46,49 @@ public class AzureBlobStoreAcceptanceTest {
     }
 
     @Test
+    public void containerExists() {
+        try {
+            assertFalse(ctx.getBlobStore().containerExists(AzureFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().containerExists(AzureFixtures.EXISTING_BUCKET_NAME));
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
     public void createContainer(){
-        try{
+        try {
             assertFalse(ctx.getBlobStore().containerExists(AzureFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().createContainer(AzureFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().containerExists(AzureFixtures.BUCKET_NAME + 1));
-        }catch (ClientException e){
-            fail();
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void listContainerContent() {
+        try {
+            Set<String> content = ctx.getBlobStore().listContainerContent(AzureFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, content.size());
+            assertTrue(content.contains(AzureFixtures.TEST_IMAGE));
+            assertTrue(content.contains(AzureFixtures.TEST_STRING));
+
+            ctx.getBlobStore().listContainerContent("nonexistent_container");
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void clearContainer(){
+        try {
+            ctx.getBlobStore().clearContainer(AzureFixtures.BUCKET_NAME);
+
+            assertTrue(ctx.getBlobStore().countBlobs(AzureFixtures.BUCKET_NAME) == 0);
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -71,7 +107,7 @@ public class AzureBlobStoreAcceptanceTest {
 
     @Test
     public void putFileBlob(){
-        Payload pl = null;
+        Payload pl;
         try {
             pl = new FilePayload(new File(ClassLoader.getSystemResource(AzureFixtures.TEST_IMAGE).toURI()));
 
@@ -99,7 +135,7 @@ public class AzureBlobStoreAcceptanceTest {
     }
 
     @Test
-    public void testBlobExist(){
+    public void blobExist(){
         try{
             boolean exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + 1);
             assertFalse(exists);
@@ -116,12 +152,27 @@ public class AzureBlobStoreAcceptanceTest {
             exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_STRING + 1);
             assertFalse(exists);
         }catch (ClientException e){
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
     @Test
-    public void testGetBlob(){
+    public void countBlobs() {
+        try {
+            long blobs = ctx.getBlobStore().countBlobs(AzureFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, blobs);
+
+            blobs = ctx.getBlobStore().countBlobs("nonexistent_bucket");
+
+            assertEquals(0, blobs);
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void getBlob(){
         try{
             // TEXT and IMAGE file upload
             Payload pl = new StringPayload(AzureFixtures.TEST_STRING_CONTENT);
@@ -147,15 +198,15 @@ public class AzureBlobStoreAcceptanceTest {
             assertEquals(8, blob1.getPayload().getContentLength());
             assertEquals(39482, blob2.getPayload().getContentLength());
         }catch (ClientException e){
-            fail();
+            fail(e.getErrorCode().toString());
         } catch (URISyntaxException e) {
             fail();
         }
     }
 
     @Test
-    public void testDeleteBlob(){
-        try{
+    public void deleteBlob(){
+        try {
             boolean exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_IMAGE);
 
             if(!exists){
@@ -168,22 +219,13 @@ public class AzureBlobStoreAcceptanceTest {
 
             exists = ctx.getBlobStore().blobExists(AzureFixtures.BUCKET_NAME, AzureFixtures.TEST_IMAGE);
             assertFalse(exists);
-        }catch (ClientException e){
-            fail();
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
         } catch (URISyntaxException e) {
             fail();
         }
     }
 
-    @Test
-    public void clearContainer(){
-        try {
-            ctx.getBlobStore().clearContainer(AzureFixtures.BUCKET_NAME);
 
-            assertTrue(ctx.getBlobStore().countBlobs(AzureFixtures.BUCKET_NAME) == 0);
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
-        }
-    }
 
 }

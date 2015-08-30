@@ -80,8 +80,11 @@ public class CreateContainerUnitTest {
 
     @Test
     public void createContainerFailServiceFail(){
+        AmazonServiceException ase = new AmazonServiceException("Error");
+        ase.setErrorCode("");
+        
         when(client.doesBucketExist(AWSFixtures.BUCKET_NAME)).thenReturn(false);
-        when(client.createBucket(any(CreateBucketRequest.class))).thenThrow(AmazonServiceException.class);
+        when(client.createBucket(any(CreateBucketRequest.class))).thenThrow(ase);
 
         try {
             blobStore.createContainer(AWSFixtures.BUCKET_NAME);

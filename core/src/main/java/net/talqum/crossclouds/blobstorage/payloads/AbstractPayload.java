@@ -7,8 +7,8 @@ import net.talqum.crossclouds.blobstorage.common.Payload;
  * Created by Imre on 2015.03.04..
  */
 public abstract class AbstractPayload<T> implements Payload {
-    protected T data;
-    protected long contentlength;
+    protected final T data;
+    protected final long contentlength;
     protected MediaType contentType;
 
     public AbstractPayload(T data, long length) {

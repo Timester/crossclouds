@@ -4,19 +4,18 @@ import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.BlobStoreContext;
 import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
 import net.talqum.crossclouds.blobstorage.common.Payload;
-import net.talqum.crossclouds.blobstorage.exceptions.ContainerNotFoundException;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
-import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
-import net.talqum.crossclouds.exceptions.ProviderException;
 import net.talqum.crossclouds.providers.ContextFactory;
 import net.talqum.crossclouds.providers.aws.fixtures.AWSFixtures;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -33,8 +32,10 @@ public class AWSS3BlobStoreAcceptanceTest {
                 .newFactory("aws")
                 .credentials(AWSFixtures.ACC_ID, AWSFixtures.ACC_SECRET)
                 .build(BlobStoreContext.class);
+    }
 
-        // Clear test data
+    @Before
+    public void init(){
         try {
             ctx.getBlobStore().deleteContainer(AWSFixtures.BUCKET_NAME + 1);
 
@@ -46,33 +47,67 @@ public class AWSS3BlobStoreAcceptanceTest {
     }
 
     @Test
-    public void testCreateContainer(){
+    public void containerExists() {
+        try {
+            assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
+            assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.EXISTING_BUCKET_NAME));
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void createContainer(){
         try {
             assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
         }catch (ClientException e){
-            e.printStackTrace();
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
     @Test
-    public void testDeleteContainer(){
+    public void listContainerContent() {
+        try {
+            Set<String> content = ctx.getBlobStore().listContainerContent(AWSFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, content.size());
+            assertTrue(content.contains(AWSFixtures.TEST_IMAGE));
+            assertTrue(content.contains(AWSFixtures.TEST_STRING));
+
+            ctx.getBlobStore().listContainerContent("nonexistent_container");
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void clearContainer(){
+        try {
+            ctx.getBlobStore().clearContainer(AWSFixtures.BUCKET_NAME);
+
+            assertTrue(ctx.getBlobStore().countBlobs(AWSFixtures.BUCKET_NAME) == 0);
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void deleteContainer(){
         try{
             ctx.getBlobStore().createContainer(AWSFixtures.BUCKET_NAME + 1);
             assertTrue(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
             ctx.getBlobStore().deleteContainer(AWSFixtures.BUCKET_NAME + 1);
             assertFalse(ctx.getBlobStore().containerExists(AWSFixtures.BUCKET_NAME + 1));
         }catch (ClientException e){
-            e.printStackTrace();
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
     @Test
-    public void testPutFileBlob(){
-        Payload pl = null;
+    public void putFileBlob(){
+        Payload pl;
         try {
             pl = new FilePayload(new File(ClassLoader.getSystemResource(AWSFixtures.TEST_IMAGE).toURI()));
 
@@ -80,15 +115,14 @@ public class AWSS3BlobStoreAcceptanceTest {
 
             assertTrue(success);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            fail();
         } catch (ClientException e) {
             fail(e.getErrorCode().toString());
         }
-
     }
 
     @Test
-    public void testPutStringBlob(){
+    public void putStringBlob(){
         Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
         boolean success = false;
         try {
@@ -101,8 +135,8 @@ public class AWSS3BlobStoreAcceptanceTest {
     }
 
     @Test
-    public void testBlobExist(){
-        try{
+    public void blobExist(){
+        try {
             boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
             assertFalse(exists);
 
@@ -117,14 +151,28 @@ public class AWSS3BlobStoreAcceptanceTest {
 
             exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_STRING);
             assertFalse(exists);
-        }catch (ClientException e){
-            e.printStackTrace();
-            fail();
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
         }
     }
 
     @Test
-    public void testGetBlob(){
+    public void countBlobs() {
+        try {
+            long blobs = ctx.getBlobStore().countBlobs(AWSFixtures.EXISTING_BUCKET_NAME);
+
+            assertEquals(2, blobs);
+
+            blobs = ctx.getBlobStore().countBlobs("nonexistent_bucket");
+
+            assertEquals(0, blobs);
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        }
+    }
+
+    @Test
+    public void getBlob(){
         try{
             // TEXT and IMAGE file upload
             Payload pl = new StringPayload(AWSFixtures.TEST_STRING_CONTENT);
@@ -158,38 +206,31 @@ public class AWSS3BlobStoreAcceptanceTest {
             Blob blob4 = ctx.getBlobStore().getBlob("Nonexistent", "Nonexistent");
             assertNull(blob4);
         }catch (ClientException e){
-            e.printStackTrace();
-            fail();
+            fail(e.getErrorCode().toString());
         } catch (URISyntaxException e) {
-            e.printStackTrace();
             fail();
         }
     }
 
     @Test
-    public void testDeleteBlob(){
+    public void deleteBlob(){
         try{
             boolean exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
-            assertTrue(exists);
+
+            if(!exists){
+                Payload pl = new FilePayload(new File(ClassLoader.getSystemResource(AWSFixtures.TEST_IMAGE).toURI()));
+                boolean success = ctx.getBlobStore().putBlob(AWSFixtures.BUCKET_NAME, new DefaultBlob(AWSFixtures.TEST_IMAGE, pl));
+                assertTrue(success);
+            }
 
             ctx.getBlobStore().removeBlob(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
 
             exists = ctx.getBlobStore().blobExists(AWSFixtures.BUCKET_NAME, AWSFixtures.TEST_IMAGE);
             assertFalse(exists);
-        }catch (ClientException e){
-            e.printStackTrace();
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        } catch (URISyntaxException e) {
             fail();
         }
     }
-
-    @Test
-    public void testClearContainer(){
-        try {
-            ctx.getBlobStore().clearContainer(AWSFixtures.BUCKET_NAME);
-            assertTrue(ctx.getBlobStore().countBlobs(AWSFixtures.BUCKET_NAME) == 0);
-        } catch (ClientException e) {
-            fail(e.getErrorCode().toString());
-        }
-    }
-
 }

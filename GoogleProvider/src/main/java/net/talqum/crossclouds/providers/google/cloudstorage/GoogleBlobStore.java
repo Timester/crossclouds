@@ -116,9 +116,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             delete.execute();
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                return;
-            } else {
+            if(((GoogleJsonResponseException)e).getStatusCode() != 404) {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
         }
@@ -162,7 +160,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
                 insert.getMediaHttpUploader().setDirectUploadEnabled(true);
             }
 
-            StorageObject executed = insert.execute();
+            insert.execute();
 
             return true;
         } catch (IOException e) {
@@ -206,9 +204,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             delete.execute();
 
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                return;
-            } else {
+            if(((GoogleJsonResponseException)e).getStatusCode() != 404) {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
         }

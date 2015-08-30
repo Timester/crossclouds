@@ -11,4 +11,5 @@ public class AzureFixtures {
     public static final String TEST_IMAGE = "testimg.jpg";
     public static final String TEST_STRING = "string.txt";
     public static final String TEST_STRING_CONTENT = "almafafa";
+    public static final String EXISTING_BUCKET_NAME = "existing";
 }

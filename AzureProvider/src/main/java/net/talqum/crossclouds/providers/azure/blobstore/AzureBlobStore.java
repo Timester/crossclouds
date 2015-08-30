@@ -13,6 +13,8 @@ import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,12 +22,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * Created by Imre on 2015.03.04..
  */
 public class AzureBlobStore extends AbstractBlobStore {
+
+    final Logger log = LoggerFactory.getLogger(AzureBlobStore.class);
 
     AzureBlobStore(DefaultAzureBlobStoreContext context) {
         super(context);
@@ -62,14 +67,18 @@ public class AzureBlobStore extends AbstractBlobStore {
     @Override
     public Set<String> listContainerContent(String container) throws ClientException {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
+        Set<String> content = new HashSet<>();
 
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
 
-            Set<String> content = new HashSet<>();
             for (ListBlobItem blobItem : containerReference.listBlobs()) {
-                content.add(blobItem.getUri().toString());
+                String URI = blobItem.getUri().toString();
+                content.add(URI.substring(URI.lastIndexOf('/') + 1));
             }
+            return content;
+        } catch (NoSuchElementException nse) {
+            log.info("Bucket " + container + " not found");
             return content;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
@@ -85,6 +94,8 @@ public class AzureBlobStore extends AbstractBlobStore {
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             containerReference.deleteIfExists();
+        } catch (NoSuchElementException nse) {
+            log.info("Bucket " + container + " not found");
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
@@ -101,6 +112,9 @@ public class AzureBlobStore extends AbstractBlobStore {
             CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blobName);
 
             return blockBlobReference.exists();
+        } catch (NoSuchElementException nse) {
+            log.info("Bucket " + container + " not found");
+            return false;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
@@ -149,6 +163,9 @@ public class AzureBlobStore extends AbstractBlobStore {
                 Payload p = new FilePayload(f);
                 return new DefaultBlob(blobName, p);
             }
+        } catch (NoSuchElementException nse) {
+            log.info("Bucket " + container + " not found");
+            return null;
         } catch (IOException e){
             e.printStackTrace();
             return null;
@@ -186,6 +203,10 @@ public class AzureBlobStore extends AbstractBlobStore {
                 counter++;
             }
             return counter;
+        } catch (NoSuchElementException nse) {
+            String errorCode = ((StorageException) nse.getCause()).getErrorCode();
+            log.info("Bucket " + container + " not found");
+            return 0;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){

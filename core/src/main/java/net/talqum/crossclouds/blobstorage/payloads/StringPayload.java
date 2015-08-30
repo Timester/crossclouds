@@ -11,7 +11,7 @@ import java.io.InputStream;
  * Created by Imre on 2015.03.04..
  */
 public class StringPayload extends AbstractPayload<String> {
-    private byte[] bytes;
+    private final byte[] bytes;
 
     public StringPayload(String data) {
         super(data, data.getBytes(Charsets.UTF_8).length);

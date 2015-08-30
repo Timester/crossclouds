@@ -3,6 +3,7 @@ package net.talqum.crossclouds.providers.aws.s3;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.model.*;
 import net.talqum.crossclouds.blobstorage.common.Blob;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
@@ -12,6 +13,8 @@ import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.HashSet;
@@ -23,6 +26,12 @@ import java.util.stream.Collectors;
  * Created by Imre on 2015.03.04..
  */
 public class AWSS3BlobStore extends AbstractBlobStore {
+
+    public static final String NO_SUCH_BUCKET = "NoSuchBucket";
+    public static final String NO_SUCH_KEY = "NoSuchKey";
+    public static final String OPERATION_ABORTED = "OperationAborted";
+
+    final Logger log = LoggerFactory.getLogger(AWSS3BlobStore.class);
 
     AWSS3BlobStore(DefaultAWSS3BlobStoreContext context) {
         super(context);
@@ -43,7 +52,13 @@ public class AWSS3BlobStore extends AbstractBlobStore {
                 return true;
             }
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            switch (ase.getErrorCode()){
+                case OPERATION_ABORTED:
+                    log.warn(ase.getErrorMessage());
+                    throw new ProviderException(ase, ClientErrorCodes.OPERATION_CONFILCT);
+                default:
+                    throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         } catch (AmazonClientException ace){
             throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
@@ -51,11 +66,11 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Set<String> listContainerContent(String container) throws ClientException {
+        Set<String> names = new HashSet<>();
         try{
             AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getClient();
             ObjectListing objectListing = client.listObjects(container);
             List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
-            Set<String> names = new HashSet<>();
 
             names.addAll(objectSummaries.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList()));
 
@@ -72,7 +87,13 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
             return names;
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            switch (ase.getErrorCode()){
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
+                    return names;
+                default:
+                    throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         } catch (AmazonClientException ace){
             throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
@@ -80,10 +101,16 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public void deleteContainer(String container) throws ClientException {
-        try{
+        try {
             ((DefaultAWSS3BlobStoreContext) context).getClient().deleteBucket(container);
         } catch (AmazonServiceException ase) {
-            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            switch (ase.getErrorCode()){
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
+                    break;
+                default:
+                    throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         } catch (AmazonClientException ace){
             throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
@@ -95,7 +122,11 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             return true;
         } catch (AmazonS3Exception s3Exception){
             switch (s3Exception.getErrorCode()){
-                case "NoSuchKey":
+                case NO_SUCH_KEY:
+                    log.info("No key \"" + blobName + "\" found in container \"" + container + "\"");
+                    return false;
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
                     return false;
                 default:
                     return false;
@@ -108,8 +139,8 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean putBlob(String container, Blob blob) throws ClientException {
-        if(!containerExists(container)) {
-            createContainer(container);
+        if(!createContainer(container)) {
+            log.info("Container \"" + container + "\" not found, now created" );
         }
 
         try {
@@ -150,9 +181,11 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             }
         } catch (AmazonServiceException ase) {
             switch (ase.getErrorCode()){
-                case "NoSuchKey":
+                case NO_SUCH_KEY:
+                    log.info("No key \"" + blobName + "\" found in container \"" + container + "\"");
                     return null;
-                case "NoSuchBucket":
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
                     return null;
                 default:
                     throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
@@ -168,8 +201,17 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     public void removeBlob(String container, String blobName) throws ClientException {
         try {
             ((DefaultAWSS3BlobStoreContext) context).getClient().deleteObject(container, blobName);
-        }catch (AmazonServiceException ase) {
-            throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (AmazonServiceException ase) {
+            switch (ase.getErrorCode()){
+                case NO_SUCH_KEY:
+                    log.info("No key \"" + blobName + "\" found in container \"" + container + "\"");
+                    break;
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
+                    break;
+                default:
+                    throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         } catch (AmazonClientException ace){
             throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
@@ -190,9 +232,17 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             }
 
             return count;
-        }catch (AmazonServiceException ase) {
+        } catch (AmazonS3Exception as3e) {
+            switch (as3e.getErrorCode()){
+                case NO_SUCH_BUCKET:
+                    log.info("Bucket " + container + " not found");
+                    return 0;
+                default:
+                    throw new ProviderException(as3e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
+        } catch (AmazonServiceException ase) {
             throw new ProviderException(ase, ClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (AmazonClientException ace){
+        } catch (AmazonClientException ace) {
             throw new ClientException(ace, ClientErrorCodes.NO_NETWORK);
         }
     }

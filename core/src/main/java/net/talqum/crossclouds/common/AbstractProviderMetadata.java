@@ -9,8 +9,8 @@ import java.util.List;
  * Created by Imre on 2015.03.07..
  */
 public abstract class AbstractProviderMetadata implements ProviderMetadata {
-    private String id;
-    protected List<TypeToken<? extends Context>> services;
+    private final String id;
+    protected final List<TypeToken<? extends Context>> services;
 
     public AbstractProviderMetadata(String id) {
         this.id = id;

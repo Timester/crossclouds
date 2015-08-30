@@ -29,16 +29,16 @@ public interface BlobStore {
     boolean createContainer(String container) throws ClientException;
 
     /**
-     * Returns a set of string with the names of the items in this blob.
+     * Returns a set of strings with the names of the items in this container.
      * @param container the name of the container.
-     * @return a set of strings describing container content
+     * @return a set of strings describing container content, empty set if the container is empty
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
     Set<String> listContainerContent(String container) throws ClientException;
 
     /**
-     * Empties the given container.
+     * Empties the given container, nothing if it is nonexistent.
      * @param container name of the container.
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)

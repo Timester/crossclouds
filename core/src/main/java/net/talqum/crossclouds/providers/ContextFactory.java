@@ -20,7 +20,7 @@ public class ContextFactory {
     private String credentialsFilePath;
     private String applicationName;
 
-    private ProviderMetadata providerMetadata;
+    private final ProviderMetadata providerMetadata;
 
     private ContextFactory(String provider) {
         this.providerMetadata = Providers.find(provider);
@@ -46,6 +46,8 @@ public class ContextFactory {
         return this;
     }
 
+
+    @SuppressWarnings("unchecked")
     public <C extends Context> C build(Class<C> contextType) {
 
         TypeToken<C> cTypeToken = typeToken(contextType);

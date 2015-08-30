@@ -5,7 +5,7 @@ package net.talqum.crossclouds.blobstorage.common;
  */
 public class DefaultBlob implements Blob {
     private final String name;
-    private Payload payload;
+    private final Payload payload;
 
     public DefaultBlob(String name, Payload payload) {
         this.name = name;

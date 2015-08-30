@@ -47,12 +47,12 @@ public class GoogleBlobStoreAcceptanceTest {
     }
 
     @Test
-    public void ContainerExists() {
+    public void containerExists() {
         try {
             assertFalse(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.EXISTING_BUCKET_NAME));
         } catch (ClientException e) {
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -63,7 +63,7 @@ public class GoogleBlobStoreAcceptanceTest {
             assertTrue(ctx.getBlobStore().createContainer(GoogleFixtures.BUCKET_NAME + 1));
             assertTrue(ctx.getBlobStore().containerExists(GoogleFixtures.BUCKET_NAME + 1));
         } catch (ClientException e){
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -78,7 +78,7 @@ public class GoogleBlobStoreAcceptanceTest {
 
             ctx.getBlobStore().listContainerContent("nonexistent_container");
         } catch (ClientException e) {
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -104,7 +104,7 @@ public class GoogleBlobStoreAcceptanceTest {
 
             ctx.getBlobStore().deleteContainer("nonexistent_container");
         } catch (ClientException e){
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -138,8 +138,8 @@ public class GoogleBlobStoreAcceptanceTest {
     }
 
     @Test
-    public void testBlobExist(){
-        try{
+    public void blobExist(){
+        try {
             boolean exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_STRING + 1);
             assertFalse(exists);
 
@@ -154,8 +154,8 @@ public class GoogleBlobStoreAcceptanceTest {
 
             exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_STRING + 1);
             assertFalse(exists);
-        }catch (ClientException e){
-            fail();
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
         }
     }
 
@@ -170,12 +170,12 @@ public class GoogleBlobStoreAcceptanceTest {
 
             assertEquals(0, blobs);
         } catch (ClientException e) {
-            fail();
+            fail(e.getErrorCode().toString());
         }
     }
 
     @Test
-    public void testGetBlob(){
+    public void getBlob(){
         try{
             // TEXT and IMAGE file upload
             Payload pl = new StringPayload(GoogleFixtures.TEST_STRING_CONTENT);
@@ -200,13 +200,15 @@ public class GoogleBlobStoreAcceptanceTest {
             assertNotNull(blob2.getPayload().getRawContent());
             assertEquals(8, blob1.getPayload().getContentLength());
             assertEquals(39482, blob2.getPayload().getContentLength());
-        } catch (ClientException | URISyntaxException e) {
+        } catch (ClientException e) {
+            fail(e.getErrorCode().toString());
+        } catch (URISyntaxException e) {
             fail();
         }
     }
 
     @Test
-    public void testDeleteBlob(){
+    public void deleteBlob(){
         try {
             boolean exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_IMAGE);
 
@@ -221,7 +223,7 @@ public class GoogleBlobStoreAcceptanceTest {
             exists = ctx.getBlobStore().blobExists(GoogleFixtures.BUCKET_NAME, GoogleFixtures.TEST_IMAGE);
             assertFalse(exists);
         } catch (ClientException e) {
-            fail();
+            fail(e.getErrorCode().toString());
         } catch (URISyntaxException e) {
             fail();
         }
