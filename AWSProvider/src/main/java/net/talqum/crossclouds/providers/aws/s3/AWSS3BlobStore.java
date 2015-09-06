@@ -138,7 +138,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
         } catch (AmazonS3Exception s3Exception){
             switch (s3Exception.getErrorCode()){
                 case NO_SUCH_KEY:
-                    logBlobNotFound(container, blobName);
                     return false;
                 case NO_SUCH_CONTAINER:
                     logContainerNotFound(container);

@@ -19,6 +19,7 @@ public class ContextFactory {
     private String secret;
     private String credentialsFilePath;
     private String applicationName;
+    private String accountID;
 
     private final ProviderMetadata providerMetadata;
 
@@ -46,6 +47,11 @@ public class ContextFactory {
         return this;
     }
 
+    public ContextFactory accountID(String accountID) {
+        this.accountID = accountID;
+        return this;
+    }
+
 
     @SuppressWarnings("unchecked")
     public <C extends Context> C build(Class<C> contextType) {
@@ -66,7 +72,7 @@ public class ContextFactory {
                 if(Strings.isNullOrEmpty(credentialsFilePath)) {
                     return (C) rawType.getConstructor(String.class, String.class).newInstance(identity, secret);
                 } else {
-                    return (C) rawType.getConstructor(String.class, String.class).newInstance(applicationName, credentialsFilePath);
+                    return (C) rawType.getConstructor(String.class, String.class, String.class).newInstance(applicationName, accountID, credentialsFilePath);
                 }
             } else {
                 throw new ServiceNotSupportedException("No service found for the given criteria.");

@@ -6,6 +6,7 @@ import com.google.api.client.extensions.java6.auth.oauth2.VerificationCodeReceiv
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -19,11 +20,13 @@ import net.talqum.crossclouds.exceptions.ClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,35 +37,40 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
 
     final Logger log = LoggerFactory.getLogger(DefaultGoogleBlobStoreContext.class);
 
-    private static String CREDENTIALS_FILE_PATH = "google_secrets.json";
     private static MemoryDataStoreFactory dataStoreFactory;
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
 
     private final Storage cloudStorageClient;
-    final String applicationName;
 
-    public DefaultGoogleBlobStoreContext(String applicationName, String credentialsFilePath) throws URISyntaxException, InvalidKeyException{
+    private final String credentialsFilePath;
+    final String applicationName;
+    private final String serviceAccountID;
+
+    public DefaultGoogleBlobStoreContext(String applicationName, String serviceAccountID, String credentialsFilePath)
+            throws URISyntaxException, InvalidKeyException{
+
         super();
 
         log.info("Initializing Google Blobstorecontext");
 
         this.applicationName = applicationName;
+        this.serviceAccountID = serviceAccountID;
+        this.credentialsFilePath = credentialsFilePath;
 
         Credential credential = null;
-        CREDENTIALS_FILE_PATH = credentialsFilePath;
 
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             dataStoreFactory = new MemoryDataStoreFactory();
 
-            credential = authorize();
+            credential = authorizeWithServiceAccount();
         } catch (GeneralSecurityException e) {
-            e.printStackTrace();
+            log.error("Auth failure", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ClientException(e, ClientErrorCodes.IO_ERROR);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Unexpected error", e);
         }
 
         setBlobStore(new GoogleBlobStore(this));
@@ -86,14 +94,29 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
         // TODO
     }
 
-    private static Credential authorize() throws Exception {
+    private GoogleCredential authorizeWithServiceAccount() throws Exception {
+        Set<String> scopes = new HashSet<>();
+        scopes.add(StorageScopes.DEVSTORAGE_FULL_CONTROL);
+
+        GoogleCredential credential = new GoogleCredential.Builder()
+                .setTransport(httpTransport)
+                .setJsonFactory(JSON_FACTORY)
+                .setServiceAccountId(serviceAccountID)
+                .setServiceAccountPrivateKeyFromP12File(new File(credentialsFilePath))
+                .setServiceAccountScopes(Collections.singleton(StorageScopes.DEVSTORAGE_FULL_CONTROL))
+                .build();
+
+        return credential;
+    }
+
+    private Credential authorizeWithWebFlow() throws Exception {
         // Load client secrets.
         GoogleClientSecrets clientSecrets;
         try {
             clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
                     new InputStreamReader(
                             DefaultGoogleBlobStoreContext.class.getResourceAsStream(
-                                String.format("/%s", CREDENTIALS_FILE_PATH)
+                                    String.format("/%s", credentialsFilePath)
                             )
                     )
             );
@@ -121,4 +144,6 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
 
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
+
+
 }

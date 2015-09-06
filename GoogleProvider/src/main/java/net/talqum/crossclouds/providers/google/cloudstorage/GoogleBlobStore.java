@@ -49,8 +49,12 @@ public class GoogleBlobStore extends AbstractBlobStore {
             }
             return false;
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                return false;
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    return false;
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
@@ -116,10 +120,14 @@ public class GoogleBlobStore extends AbstractBlobStore {
             } while (null != objects.getNextPageToken());
 
             return returnValue;
-        } catch (Exception e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                logContainerNotFound(container);
-                return returnValue;
+        } catch (IOException e) {
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    logContainerNotFound(container);
+                    return returnValue;
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
@@ -134,10 +142,14 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             delete.execute();
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                logContainerNotFound(container);
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    logContainerNotFound(container);
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
-                throw new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+                throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
         }
     }
@@ -150,9 +162,12 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             return true;
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                logBlobNotFound(container, blobName);
-                return false;
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    return false;
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
@@ -237,8 +252,12 @@ public class GoogleBlobStore extends AbstractBlobStore {
             delete.execute();
 
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                logBlobNotFound(container, blobName);
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    logBlobNotFound(container, blobName);
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
@@ -265,9 +284,13 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             return retVal;
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
-                logContainerNotFound(container);
-                return 0;
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    logContainerNotFound(container);
+                    return 0;
+                } else {
+                    throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+                }
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }

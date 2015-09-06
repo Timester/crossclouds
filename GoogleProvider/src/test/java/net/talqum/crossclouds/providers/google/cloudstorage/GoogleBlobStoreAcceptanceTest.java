@@ -28,6 +28,7 @@ public class GoogleBlobStoreAcceptanceTest {
                 .newFactory("google")
                 .credentials(GoogleFixtures.GOOGLE_CREDENTIALS)
                 .applicationName(GoogleFixtures.APP_ID)
+                .accountID(GoogleFixtures.SERVICE_ACC_ID)
                 .build(BlobStoreContext.class);
 
         blobStore = ctx.getBlobStore();

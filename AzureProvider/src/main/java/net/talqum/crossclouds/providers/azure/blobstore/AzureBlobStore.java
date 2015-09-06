@@ -150,9 +150,8 @@ public class AzureBlobStore extends AbstractBlobStore {
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
             throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (IOException e){
-            e.printStackTrace();
-            return false;
+        } catch (IOException e) {
+            throw new ClientException(e, ClientErrorCodes.IO_ERROR);
         }
     }
 
