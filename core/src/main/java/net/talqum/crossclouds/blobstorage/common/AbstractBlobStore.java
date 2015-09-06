@@ -1,6 +1,7 @@
 package net.talqum.crossclouds.blobstorage.common;
 
 import net.talqum.crossclouds.exceptions.ClientException;
+import org.slf4j.Logger;
 
 import java.util.Set;
 
@@ -9,10 +10,12 @@ import java.util.Set;
  */
 public abstract class AbstractBlobStore implements BlobStore {
 
+    protected final Logger log;
     protected final BlobStoreContext context;
 
-    protected AbstractBlobStore(BlobStoreContext context) {
+    protected AbstractBlobStore(BlobStoreContext context, Logger log) {
         this.context = context;
+        this.log = log;
     }
 
     @Override
@@ -42,5 +45,13 @@ public abstract class AbstractBlobStore implements BlobStore {
         for (String name : blobNames) {
             removeBlob(container, name);
         }
+    }
+
+    protected String logContainerNotFound(String container) {
+        return "Container " + container + " not found";
+    }
+
+    protected String logBlobNotFound(String container, String blob) {
+        return "No key \"" + blob + "\" found in container \"" + container + "\"";
     }
 }

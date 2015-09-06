@@ -48,32 +48,32 @@ public class CreateContainerUnitTest {
 
     @Test
     public void createContainerSuccessAlreadyExists(){
-        when(client.doesBucketExist(AWSFixtures.BUCKET_NAME)).thenReturn(true);
+        when(client.doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME)).thenReturn(true);
 
         try {
-            boolean response = blobStore.createContainer(AWSFixtures.BUCKET_NAME);
+            boolean response = blobStore.createContainer(AWSFixtures.TEMP_BUCKET_NAME);
             assertFalse(response);
         } catch (ClientException e) {
             fail();
         }
 
-        verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);
+        verify(client).doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME);
         verifyNoMoreInteractions(client);
     }
 
     @Test
     public void createContainerSuccessNotExistsYet(){
-        when(client.doesBucketExist(AWSFixtures.BUCKET_NAME)).thenReturn(false);
+        when(client.doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME)).thenReturn(false);
         when(client.createBucket(any(CreateBucketRequest.class))).thenReturn(new Bucket());
 
         try {
-            boolean response = blobStore.createContainer(AWSFixtures.BUCKET_NAME);
+            boolean response = blobStore.createContainer(AWSFixtures.TEMP_BUCKET_NAME);
             assertTrue(response);
         } catch (ClientException e) {
             fail();
         }
 
-        verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);
+        verify(client).doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME);
         verify(client).createBucket(any(CreateBucketRequest.class));
         verifyNoMoreInteractions(client);
     }
@@ -83,34 +83,34 @@ public class CreateContainerUnitTest {
         AmazonServiceException ase = new AmazonServiceException("Error");
         ase.setErrorCode("");
         
-        when(client.doesBucketExist(AWSFixtures.BUCKET_NAME)).thenReturn(false);
+        when(client.doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME)).thenReturn(false);
         when(client.createBucket(any(CreateBucketRequest.class))).thenThrow(ase);
 
         try {
-            blobStore.createContainer(AWSFixtures.BUCKET_NAME);
+            blobStore.createContainer(AWSFixtures.TEMP_BUCKET_NAME);
         } catch (ClientException e) {
             assertTrue(e instanceof ProviderException);
             assertTrue(e.getErrorCode().equals(ClientErrorCodes.SERVICE_UNAVAILABLE));
         }
 
-        verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);
+        verify(client).doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME);
         verify(client).createBucket(any(CreateBucketRequest.class));
         verifyNoMoreInteractions(client);
     }
 
     @Test
     public void createContainerFailClientFail(){
-        when(client.doesBucketExist(AWSFixtures.BUCKET_NAME)).thenReturn(false);
+        when(client.doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME)).thenReturn(false);
         when(client.createBucket(any(CreateBucketRequest.class))).thenThrow(AmazonClientException.class);
 
         try {
-            blobStore.createContainer(AWSFixtures.BUCKET_NAME);
+            blobStore.createContainer(AWSFixtures.TEMP_BUCKET_NAME);
         } catch (ClientException e) {
             assertTrue(e instanceof ClientException);
             assertTrue(e.getErrorCode().equals(ClientErrorCodes.NO_NETWORK));
         }
 
-        verify(client).doesBucketExist(AWSFixtures.BUCKET_NAME);
+        verify(client).doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME);
         verify(client).createBucket(any(CreateBucketRequest.class));
         verifyNoMoreInteractions(client);
     }

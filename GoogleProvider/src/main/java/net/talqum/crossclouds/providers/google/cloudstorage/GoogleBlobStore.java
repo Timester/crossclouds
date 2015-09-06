@@ -1,10 +1,12 @@
 package net.talqum.crossclouds.providers.google.cloudstorage;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.model.Bucket;
+import com.google.api.services.storage.model.Buckets;
 import com.google.api.services.storage.model.StorageObject;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStore;
 import net.talqum.crossclouds.blobstorage.common.Blob;
@@ -12,9 +14,7 @@ import net.talqum.crossclouds.blobstorage.common.DefaultBlob;
 import net.talqum.crossclouds.blobstorage.common.Payload;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
-import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -31,14 +31,12 @@ import java.util.stream.Collectors;
  */
 public class GoogleBlobStore extends AbstractBlobStore {
 
-    final Logger log = LoggerFactory.getLogger(GoogleBlobStore.class);
-
     GoogleBlobStore(DefaultGoogleBlobStoreContext context) {
-        super(context);
+        super(context, LoggerFactory.getLogger(GoogleBlobStore.class));
     }
 
     @Override
-    public boolean containerExists(String container) throws ProviderException{
+    public boolean containerExists(String container) {
         try {
             Storage.Buckets.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().buckets().get(container);
             get.setProjection("full");
@@ -60,7 +58,27 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean createContainer(String container) throws ProviderException {
+    public Set<String> listContainers() {
+        Set<String> containers = new HashSet<>();
+        try {
+            Storage.Buckets.List bucketList = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
+                    .list(((DefaultGoogleBlobStoreContext) context).applicationName);
+
+            Buckets buckets;
+            do {
+                buckets = bucketList.execute();
+                containers.addAll(buckets.getItems().stream().map(Bucket::getName).collect(Collectors.toList()));
+                bucketList.setPageToken(buckets.getNextPageToken());
+            } while (null != buckets.getNextPageToken());
+
+            return containers;
+        } catch (IOException e) {
+            throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+        }
+    }
+
+    @Override
+    public boolean createContainer(String container) {
         if (containerExists(container)) {
             return false;
         } else {
@@ -80,7 +98,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public Set<String> listContainerContent(String container) throws ProviderException {
+    public Set<String> listContainerContent(String container) {
         Set<String> returnValue = new HashSet<>();
         try {
             Storage.Objects.List listObjects = ((DefaultGoogleBlobStoreContext) context).getClient().objects().list(container);
@@ -89,7 +107,6 @@ public class GoogleBlobStore extends AbstractBlobStore {
                 objects = listObjects.execute();
                 List<StorageObject> items = objects.getItems();
                 if (null == items) {
-                    log.debug("The bucket is empty");
                     break;
                 }
 
@@ -101,6 +118,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             return returnValue;
         } catch (Exception e) {
             if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+                logContainerNotFound(container);
                 return returnValue;
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
@@ -109,21 +127,23 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void deleteContainer(String container) throws ProviderException {
+    public void deleteContainer(String container) {
         try {
             Storage.Buckets.Delete delete = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
                     .delete(container);
 
             delete.execute();
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() != 404) {
-                throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+                logContainerNotFound(container);
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
             }
         }
     }
 
     @Override
-    public boolean blobExists(String container, String blobName) throws ProviderException {
+    public boolean blobExists(String container, String blobName) {
         try {
             Storage.Objects.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().objects().get(container, blobName);
             get.execute();
@@ -131,6 +151,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             return true;
         } catch (IOException e) {
             if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+                logBlobNotFound(container, blobName);
                 return false;
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
@@ -139,7 +160,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean putBlob(String container, Blob blob) throws ProviderException {
+    public boolean putBlob(String container, Blob blob) {
         if(!containerExists(container)) {
             createContainer(container);
         }
@@ -169,7 +190,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public Blob getBlob(String container, String blobName) throws ProviderException {
+    public Blob getBlob(String container, String blobName) {
         try {
             Storage.Objects.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().objects()
                     .get(container, blobName);
@@ -186,9 +207,21 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             Payload p = new FilePayload(f);
             return new DefaultBlob(blobName, p);
-        } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+        } catch (HttpResponseException e) {
+            if(e.getStatusCode() == 404) {
+                logBlobNotFound(container, blobName);
                 return null;
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+            }
+        } catch (IOException e) {
+            if(e instanceof GoogleJsonResponseException) {
+                if(((GoogleJsonResponseException)e).getStatusCode() == 404){
+                    logBlobNotFound(container, blobName);
+                    return null;
+                }
+
+                throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
@@ -196,7 +229,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void removeBlob(String container, String blobName) throws ProviderException {
+    public void removeBlob(String container, String blobName) {
         try {
             Storage.Objects.Delete delete = ((DefaultGoogleBlobStoreContext) context).getClient().objects()
                     .delete(container, blobName);
@@ -204,14 +237,16 @@ public class GoogleBlobStore extends AbstractBlobStore {
             delete.execute();
 
         } catch (IOException e) {
-            if(((GoogleJsonResponseException)e).getStatusCode() != 404) {
+            if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+                logBlobNotFound(container, blobName);
+            } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
             }
         }
     }
 
     @Override
-    public long countBlobs(String container) throws ClientException {
+    public long countBlobs(String container) {
         long retVal = 0;
         try {
             Storage.Objects.List listObjects = ((DefaultGoogleBlobStoreContext) context).getClient().objects().list(container);
@@ -231,6 +266,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             return retVal;
         } catch (IOException e) {
             if(((GoogleJsonResponseException)e).getStatusCode() == 404) {
+                logContainerNotFound(container);
                 return 0;
             } else {
                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);

@@ -6,7 +6,7 @@ package net.talqum.crossclouds.exceptions;
  * Date: 2015.04.19.
  * Time: 10:29
  */
-public class ClientException extends Exception {
+public class ClientException extends RuntimeException {
     protected ClientErrorCodes errorCode;
 
     public ClientException(ClientErrorCodes errorCode){

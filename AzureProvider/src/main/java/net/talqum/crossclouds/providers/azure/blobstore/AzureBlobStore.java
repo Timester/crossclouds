@@ -13,7 +13,6 @@ import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -30,14 +29,12 @@ import java.util.Set;
  */
 public class AzureBlobStore extends AbstractBlobStore {
 
-    final Logger log = LoggerFactory.getLogger(AzureBlobStore.class);
-
     AzureBlobStore(DefaultAzureBlobStoreContext context) {
-        super(context);
+        super(context, LoggerFactory.getLogger(AzureBlobStore.class));
     }
 
     @Override
-    public boolean containerExists(String container) throws ClientException {
+    public boolean containerExists(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
@@ -51,7 +48,19 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean createContainer(String container) throws ClientException {
+    public Set<String> listContainers() {
+        Iterable<CloudBlobContainer> cloudBlobContainers = ((DefaultAzureBlobStoreContext) context).getClient().listContainers();
+        Set<String> containers = new HashSet<>();
+
+        for (CloudBlobContainer cloudBlobContainer : cloudBlobContainers) {
+            containers.add(cloudBlobContainer.getName());
+        }
+
+        return containers;
+    }
+
+    @Override
+    public boolean createContainer(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
@@ -65,7 +74,7 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public Set<String> listContainerContent(String container) throws ClientException {
+    public Set<String> listContainerContent(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
         Set<String> content = new HashSet<>();
 
@@ -78,7 +87,7 @@ public class AzureBlobStore extends AbstractBlobStore {
             }
             return content;
         } catch (NoSuchElementException nse) {
-            log.info("Bucket " + container + " not found");
+            logContainerNotFound(container);
             return content;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
@@ -88,14 +97,14 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public void deleteContainer(String container) throws ClientException {
+    public void deleteContainer(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             containerReference.deleteIfExists();
         } catch (NoSuchElementException nse) {
-            log.info("Bucket " + container + " not found");
+            logContainerNotFound(container);
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
@@ -104,7 +113,7 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean blobExists(String container, String blobName) throws ClientException {
+    public boolean blobExists(String container, String blobName) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
@@ -113,7 +122,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
             return blockBlobReference.exists();
         } catch (NoSuchElementException nse) {
-            log.info("Bucket " + container + " not found");
+            logContainerNotFound(container);
             return false;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
@@ -123,9 +132,9 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public boolean putBlob(String container, Blob blob) throws ClientException {
-        if(!containerExists(container)) {
-            createContainer(container);
+    public boolean putBlob(String container, Blob blob) {
+        if(!createContainer(container)) {
+            log.info("Container \"" + container + "\" not found, now created");
         }
 
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
@@ -148,7 +157,7 @@ public class AzureBlobStore extends AbstractBlobStore {
     }
 
     @Override
-    public Blob getBlob(String container, String blobName) throws ClientException {
+    public Blob getBlob(String container, String blobName) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
         try{
             CloudBlobContainer containerReference = client.getContainerReference(container);
@@ -163,21 +172,27 @@ public class AzureBlobStore extends AbstractBlobStore {
                 Payload p = new FilePayload(f);
                 return new DefaultBlob(blobName, p);
             }
-        } catch (NoSuchElementException nse) {
-            log.info("Bucket " + container + " not found");
-            return null;
         } catch (IOException e){
-            e.printStackTrace();
+            log.error("IOException occured", e);
             return null;
         } catch (StorageException e) {
-            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            switch (e.getErrorCode()) {
+                case "BlobNotFound":
+                    logBlobNotFound(container, blobName);
+                    return null;
+                case "ContainerNotFound":
+                    logContainerNotFound(container);
+                    return null;
+                default:
+                    throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         } catch (URISyntaxException e) {
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         }
     }
 
     @Override
-    public void removeBlob(String container, String blobName) throws ClientException {
+    public void removeBlob(String container, String blobName) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
@@ -188,12 +203,21 @@ public class AzureBlobStore extends AbstractBlobStore {
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);
         } catch (StorageException e){
-            throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            switch (e.getErrorCode()) {
+                case "BlobNotFound":
+                    logBlobNotFound(container, blobName);
+                    break;
+                case "ContainerNotFound":
+                    logContainerNotFound(container);
+                    break;
+                default:
+                    throw  new ProviderException(e, ClientErrorCodes.SERVICE_UNAVAILABLE);
+            }
         }
     }
 
     @Override
-    public long countBlobs(String container) throws ClientException {
+    public long countBlobs(String container) {
         CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
 
         try {
@@ -204,8 +228,7 @@ public class AzureBlobStore extends AbstractBlobStore {
             }
             return counter;
         } catch (NoSuchElementException nse) {
-            String errorCode = ((StorageException) nse.getCause()).getErrorCode();
-            log.info("Bucket " + container + " not found");
+            logContainerNotFound(container);
             return 0;
         } catch (URISyntaxException e){
             throw new ClientException(e, ClientErrorCodes.NO_NETWORK);

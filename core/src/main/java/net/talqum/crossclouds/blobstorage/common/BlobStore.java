@@ -11,13 +11,24 @@ public interface BlobStore {
     BlobStoreContext getContext();
 
     /**
-     * Returns true if the container exists, false otherwise
+     * Returns true if the container does not exists, and available for you to use.
+     *
+     * In some clouds like Amazon S3, container names must be globally unique. This method returns false if the name is
+     * available for you to use. Returns true if it is used, the method does not differentiate between you or someone
+     * else owning the container. To check containers owned by you, use listContainers().
+     *
      * @param container container name to check.
      * @return true if the container exists, false otherwise
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    boolean containerExists(String container) throws ClientException;
+    boolean containerExists(String container);
+
+    /**
+     * Returns a list of container names owned by you.
+     * @return a list of your containers names.
+     */
+    Set<String> listContainers();
 
     /**
      * Creates the container if it does not exist
@@ -26,7 +37,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    boolean createContainer(String container) throws ClientException;
+    boolean createContainer(String container);
 
     /**
      * Returns a set of strings with the names of the items in this container.
@@ -35,15 +46,15 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    Set<String> listContainerContent(String container) throws ClientException;
+    Set<String> listContainerContent(String container);
 
     /**
-     * Empties the given container, nothing if it is nonexistent.
+     * Empties the given container, does nothing if it is nonexistent or already empty.
      * @param container name of the container.
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    void clearContainer(String container) throws ClientException;
+    void clearContainer(String container);
 
     /**
      * Deletes the given container.
@@ -51,7 +62,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    void deleteContainer(String container) throws ClientException;
+    void deleteContainer(String container);
 
     /**
      * Deletes the given container if it's empty.
@@ -61,7 +72,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    boolean deleteContainerIfEmpty(String container) throws ClientException;
+    boolean deleteContainerIfEmpty(String container);
 
     /**
      * Checks if a given blob exists in a given container.
@@ -71,7 +82,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    boolean blobExists(String container, String blobName) throws ClientException;
+    boolean blobExists(String container, String blobName);
 
     /**
      * Puts a Blob in the given container. If the container does not exist create it.
@@ -81,7 +92,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    boolean putBlob(String container, Blob blob) throws ClientException;
+    boolean putBlob(String container, Blob blob);
 
     /**
      * Gets a blob with a given name from the given container.
@@ -91,7 +102,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    Blob getBlob(String container, String blobName) throws ClientException;
+    Blob getBlob(String container, String blobName);
 
     /**
      * Removes a blob from the given container.
@@ -100,7 +111,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    void removeBlob(String container, String blobName) throws ClientException;
+    void removeBlob(String container, String blobName);
 
     /**
      * Removes multiple blobs from a given container.
@@ -109,7 +120,7 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    void removeBlobs(String container, Iterable<String> blobNames) throws ClientException;
+    void removeBlobs(String container, Iterable<String> blobNames);
 
     /**
      * Counts blobs in a container.
@@ -118,6 +129,5 @@ public interface BlobStore {
      * @throws ClientException if any network or service error occures
      * (ProviderException if the problem is with the service itself)
      */
-    long countBlobs(String container) throws ClientException;
-
+    long countBlobs(String container);
 }
