@@ -1,6 +1,6 @@
 package net.talqum.crossclouds.compute.common;
 
-import net.talqum.crossclouds.compute.vm.CreateRequest;
+import net.talqum.crossclouds.compute.node.Template;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,5 +11,5 @@ import net.talqum.crossclouds.compute.vm.CreateRequest;
 public interface ComputeCloud {
     ComputeCloudContext getContext();
 
-    void createInstance(CreateRequest cr);
+    void createInstance(Template template);
 }

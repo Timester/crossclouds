@@ -17,6 +17,7 @@ import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 public class ContextFactory {
     private String identity;
     private String secret;
+
     private String credentialsFilePath;
     private String applicationName;
     private String accountID;
@@ -51,7 +52,6 @@ public class ContextFactory {
         this.accountID = accountID;
         return this;
     }
-
 
     @SuppressWarnings("unchecked")
     public <C extends Context> C build(Class<C> contextType) {

@@ -1,8 +1,5 @@
 package net.talqum.crossclouds.providers.aws.ec2;
 
-import net.talqum.crossclouds.compute.vm.CreateRequest2;
-import net.talqum.crossclouds.providers.aws.ec2.util.EC2InstanceCreateRequest;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Imre
@@ -11,5 +8,5 @@ import net.talqum.crossclouds.providers.aws.ec2.util.EC2InstanceCreateRequest;
  */
 public class CreateVMTest {
 
-    CreateRequest2 cr = new EC2InstanceCreateRequest();
+
 }

@@ -2,7 +2,7 @@ package net.talqum.crossclouds.providers.azure.vm;
 
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
-import net.talqum.crossclouds.compute.vm.CreateRequest;
+import net.talqum.crossclouds.compute.node.Template;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +17,7 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
     }
 
     @Override
-    public void createInstance(CreateRequest cr) {
+    public void createInstance(Template template) {
 
     }
 }

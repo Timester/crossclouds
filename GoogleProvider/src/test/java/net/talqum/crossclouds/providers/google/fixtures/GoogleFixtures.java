@@ -5,7 +5,7 @@ package net.talqum.crossclouds.providers.google.fixtures;
  */
 public class GoogleFixtures {
     public static final String APP_ID = "988233632740";
-    public static final String GOOGLE_CREDENTIALS = "D:\\GitHub\\crossclouds\\GoogleProvider\\src\\main\\resources\\timester-136ee95d959d.p12";
+    public static final String GOOGLE_CREDENTIALS = "D:\\GitHub\\crossclouds\\GoogleProvider\\src\\test\\resources\\credentials.p12";
     public static final String SERVICE_ACC_ID = "988233632740-njvqgertiji26i6r40ke4i8dulroju7u@developer.gserviceaccount.com";
 
     public static final String TEMP_BUCKET_NAME = "talqumccbucket";

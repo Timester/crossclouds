@@ -4,7 +4,7 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
-import net.talqum.crossclouds.compute.vm.CreateRequest;
+import net.talqum.crossclouds.compute.node.Template;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,19 +19,24 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     }
 
     @Override
-    public void createInstance(CreateRequest cr) {
+    public void createInstance(Template template) {
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
 
         // TODO finish
-        runInstancesRequest.withImageId(cr.getImage())
-                .withInstanceType(cr.getType())
+        runInstancesRequest.withImageId(template.getImage().getOperatingSystem())
+                .withInstanceType(template.getHardware().getConfigId())
                 .withMinCount(1)
                 .withMaxCount(1)
-                .withKeyName(cr.getKeyName())
-                .withSecurityGroups("my-security-group");
+                .withKeyName(template.getImage().getDefaultCredentials())
+                .withSecurityGroups(template.getOptions().getSecurityGroup());
 
         RunInstancesResult runInstancesResult =
                 ((DefaultAWSEC2ComputeCloudContext)context).getClient().runInstances(runInstancesRequest);
 
+    }
+
+    private boolean checkTemplate(Template template) {
+        // TODO
+        return true;
     }
 }
