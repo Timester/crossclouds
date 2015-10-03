@@ -9,4 +9,6 @@ package net.talqum.crossclouds.compute.node;
 public interface Options {
     String getSecurityGroup();
     String getNetworkSettings();
+    int getMinInstanceCount();
+    int getMaxInstanceCount();
 }
