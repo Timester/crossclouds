@@ -2,6 +2,9 @@ package net.talqum.crossclouds.compute.common;
 
 import net.talqum.crossclouds.compute.node.Template;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Imre
@@ -11,5 +14,8 @@ import net.talqum.crossclouds.compute.node.Template;
 public interface ComputeCloud {
     ComputeCloudContext getContext();
 
-    void createInstance(Template template);
+    void createAndStartInstance(Template template);
+    void startInstance();
+    void stopInstance();
+    Map<String, InstanceStatus> getInstanceStatus(List<String> instanceIds);
 }
