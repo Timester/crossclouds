@@ -4,7 +4,7 @@ import net.talqum.crossclouds.blobstorage.common.*;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
 import net.talqum.crossclouds.exceptions.ClientException;
-import net.talqum.crossclouds.providers.ContextFactory;
+import net.talqum.crossclouds.providers.CloudContext;
 import net.talqum.crossclouds.providers.google.fixtures.GoogleFixtures;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -24,12 +24,14 @@ public class GoogleBlobStoreAcceptanceTest {
 
     @BeforeClass
     public static void setCtx(){
-        ctx = ContextFactory
-                .newFactory("google")
-                .credentials(GoogleFixtures.GOOGLE_CREDENTIALS)
-                .applicationName(GoogleFixtures.APP_ID)
-                .accountID(GoogleFixtures.SERVICE_ACC_ID)
-                .build(BlobStoreContext.class);
+        ctx = CloudContext.create(BlobStoreContext.class)
+                .fromProvider("google")
+                .addCredentials()
+                    .keyBased()
+                        .accountId(GoogleFixtures.SERVICE_ACC_ID)
+                        .applicationName(GoogleFixtures.APP_ID)
+                        .keyPath(GoogleFixtures.GOOGLE_CREDENTIALS)
+                .build();
 
         blobStore = ctx.getBlobStore();
     }

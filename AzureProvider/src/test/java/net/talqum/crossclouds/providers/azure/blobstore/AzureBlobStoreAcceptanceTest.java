@@ -4,7 +4,7 @@ import net.talqum.crossclouds.blobstorage.common.*;
 import net.talqum.crossclouds.blobstorage.payloads.FilePayload;
 import net.talqum.crossclouds.blobstorage.payloads.StringPayload;
 import net.talqum.crossclouds.exceptions.ClientException;
-import net.talqum.crossclouds.providers.ContextFactory;
+import net.talqum.crossclouds.providers.CloudContext;
 import net.talqum.crossclouds.providers.azure.fixtures.AzureFixtures;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -24,10 +24,13 @@ public class AzureBlobStoreAcceptanceTest {
 
     @BeforeClass
     public static void setCtx() {
-        ctx = ContextFactory
-                .newFactory("azure")
-                .credentials(AzureFixtures.ACC_ID, AzureFixtures.ACC_SECRET)
-                .build(BlobStoreContext.class);
+        ctx = CloudContext.create(BlobStoreContext.class)
+                .fromProvider("azure")
+                .addCredentials()
+                    .idAndSecretBased()
+                        .id(AzureFixtures.ACC_ID)
+                        .secret(AzureFixtures.ACC_SECRET)
+                .build();
 
         blobStore = ctx.getBlobStore();
     }

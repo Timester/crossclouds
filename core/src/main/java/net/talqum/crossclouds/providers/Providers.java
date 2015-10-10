@@ -8,7 +8,7 @@ import java.util.ServiceLoader;
 /**
  * Created by Imre on 2015.03.07..
  */
-public class Providers {
+class Providers {
 
     private static Iterable<ProviderMetadata> loadProviderMetadata() {
         return ServiceLoader.load(ProviderMetadata.class);
