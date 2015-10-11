@@ -10,6 +10,6 @@ public interface Image {
 
    String getOperatingSystem();
 
-   String getDefaultCredentials();
+   String getCredentials();
 
 }

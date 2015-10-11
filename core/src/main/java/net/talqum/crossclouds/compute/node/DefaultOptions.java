@@ -15,7 +15,7 @@ public class DefaultOptions implements Options {
     private final int minInstanceCount;
     private final int maxInstanceCount;
 
-    public DefaultOptions(Builder builder) {
+    private DefaultOptions(Builder builder) {
         this.securityGroup = builder.securityGroup;
         this.networkSettings = builder.networkSettings;
         this.minInstanceCount = builder.minInstanceCount;
@@ -53,21 +53,21 @@ public class DefaultOptions implements Options {
 
     @Override
     public String getSecurityGroup() {
-        return null;
+        return securityGroup;
     }
 
     @Override
     public String getNetworkSettings() {
-        return null;
+        return networkSettings;
     }
 
     @Override
     public int getMinInstanceCount() {
-        return 0;
+        return minInstanceCount;
     }
 
     @Override
     public int getMaxInstanceCount() {
-        return 0;
+        return maxInstanceCount;
     }
 }

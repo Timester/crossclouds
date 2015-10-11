@@ -6,7 +6,7 @@ package net.talqum.crossclouds.compute.node;
  * Date: 2015. 10. 03.
  * Time: 16:22
  */
-public class DefaultImage {
+public class DefaultImage implements Image {
     private final String operatingSystem;
     private final String credentials;
 
@@ -15,7 +15,7 @@ public class DefaultImage {
         this.credentials = b.credentials;
     }
 
-    private static class Builder {
+    public static class Builder {
         private final String operatingSystem;
         private String credentials;
 
@@ -33,10 +33,12 @@ public class DefaultImage {
         }
     }
 
+    @Override
     public String getOperatingSystem() {
         return operatingSystem;
     }
 
+    @Override
     public String getCredentials() {
         return credentials;
     }
