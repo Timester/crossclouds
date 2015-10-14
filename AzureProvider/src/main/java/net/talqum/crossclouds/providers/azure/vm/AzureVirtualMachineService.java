@@ -21,7 +21,6 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
         super(context);
     }
 
-
     @Override
     public void createAndStartInstance(Template template) {
 
