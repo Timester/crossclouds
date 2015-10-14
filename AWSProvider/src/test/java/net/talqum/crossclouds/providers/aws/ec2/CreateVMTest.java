@@ -3,9 +3,11 @@ package net.talqum.crossclouds.providers.aws.ec2;
 import net.talqum.crossclouds.compute.common.ComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
 import net.talqum.crossclouds.compute.node.*;
+import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.providers.CloudContext;
 import net.talqum.crossclouds.providers.aws.fixtures.AWSFixtures;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,23 +23,23 @@ public class CreateVMTest {
     private static ComputeCloudContext ctx;
     private static ComputeCloud computeCloud;
 
-    private static DefaultImage image;
-    private static DefaultHardware hardware;
-    private static DefaultOptions options;
+    private static Image image;
+    private static Hardware hardware;
+    private static Options options;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void setCtx() {
-        image = new DefaultImage.Builder(AWSFixtures.UBUNTU_AMI)
+        image = new Image.Builder(AWSFixtures.UBUNTU_AMI)
                 .credentials(AWSFixtures.KEYPAIR_NAME)
                 .build();
 
-        hardware = new DefaultHardware.Builder(AWSFixtures.T2_MICRO)
+        hardware = new Hardware.Builder(AWSFixtures.T2_MICRO)
                 .build();
 
-        options = new DefaultOptions.Builder()
+        options = new Options.Builder()
                 .maxInstancesCount(1)
                 .minInstancesCount(1)
                 .securityGroup(AWSFixtures.SECURITY_GROUP_ID)
@@ -54,9 +56,10 @@ public class CreateVMTest {
         computeCloud = ctx.getComputeCloud();
     }
 
+    @Ignore
     @Test
     public void createVMOK() {
-        Template template = new DefaultTemplate.Builder("teszt")
+        Template template = new Template.Builder("teszt")
                 .hardware(hardware)
                 .image(image)
                 .options(options)
@@ -75,7 +78,7 @@ public class CreateVMTest {
 
     @Test
     public void createVMFailBecauseOfInvalidTemplateImage() {
-        Template tmp = new DefaultTemplate.Builder("teszt")
+        Template tmp = new Template.Builder("teszt")
                 .hardware(hardware)
                 .image(null)
                 .options(options)
@@ -89,10 +92,10 @@ public class CreateVMTest {
 
     @Test
     public void createVMFailBecauseOfInvalidTemplateHardwareAndOptions() {
-        DefaultHardware hw = new DefaultHardware.Builder("")
+        Hardware hw = new Hardware.Builder("")
                 .build();
 
-        Template tmp = new DefaultTemplate.Builder("teszt")
+        Template tmp = new Template.Builder("teszt")
                 .hardware(hw)
                 .image(image)
                 .options(null)
@@ -106,6 +109,69 @@ public class CreateVMTest {
 
     @Test
     public void createVMFailBecauseOfInvalidParameters() {
+        Image di = new Image.Builder("os1")
+                .credentials("cred1")
+                .build();
 
+        Template tmp = new Template.Builder("teszt")
+                .hardware(hardware)
+                .image(di)
+                .options(options)
+                .build();
+
+        exception.expect(ClientException.class);
+
+        computeCloud.createAndStartInstance(tmp);
+    }
+
+    @Test
+    public void createVMFailBecauseOfInvalidParameters2() {
+        Image di = new Image.Builder(AWSFixtures.UBUNTU_AMI)
+                .credentials("cred1")
+                .build();
+
+        Template tmp = new Template.Builder("teszt")
+                .hardware(hardware)
+                .image(di)
+                .options(options)
+                .build();
+
+        exception.expect(ClientException.class);
+
+        computeCloud.createAndStartInstance(tmp);
+    }
+
+    @Test
+    public void createVMFailBecauseOfInvalidParameters3() {
+        Hardware hw = new Hardware.Builder("valami").build();
+
+        Template tmp = new Template.Builder("teszt")
+                .hardware(hw)
+                .image(image)
+                .options(options)
+                .build();
+
+        exception.expect(ClientException.class);
+
+        computeCloud.createAndStartInstance(tmp);
+    }
+
+    @Test
+    public void createVMFailBecauseOfInvalidParameters4() {
+        Options opt = new Options.Builder()
+                .maxInstancesCount(1)
+                .minInstancesCount(1)
+                .securityGroup("secgrp")
+                .build();
+
+        Template tmp = new Template.Builder("teszt")
+                .hardware(hardware)
+                .image(image)
+                .options(opt)
+                .build();
+
+        exception.expect(ClientException.class);
+
+        computeCloud.createAndStartInstance(tmp);
     }
 }

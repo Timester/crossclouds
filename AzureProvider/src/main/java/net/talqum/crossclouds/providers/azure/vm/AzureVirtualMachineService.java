@@ -1,5 +1,6 @@
 package net.talqum.crossclouds.providers.azure.vm;
 
+import net.talqum.crossclouds.compute.Instance;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
 import net.talqum.crossclouds.compute.common.InstanceStatus;
@@ -20,6 +21,7 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
         super(context);
     }
 
+
     @Override
     public void createAndStartInstance(Template template) {
 
@@ -31,12 +33,17 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
     }
 
     @Override
-    public void stopInstance() {
+    public void stopInstance(List<Instance> instanceIDs) {
 
     }
 
     @Override
-    public Map<String,InstanceStatus> getInstanceStatus(List<String> instanceIds) {
+    public List<Instance> listInstances() {
+        return null;
+    }
+
+    @Override
+    public Instance getInstance(String instanceId) {
         return null;
     }
 }

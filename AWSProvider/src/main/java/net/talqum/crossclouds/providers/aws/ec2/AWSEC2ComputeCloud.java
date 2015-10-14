@@ -3,16 +3,16 @@ package net.talqum.crossclouds.providers.aws.ec2;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.*;
+import net.talqum.crossclouds.compute.Instance;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
-import net.talqum.crossclouds.compute.common.InstanceStatus;
 import net.talqum.crossclouds.compute.node.Template;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
+import net.talqum.crossclouds.exceptions.ProviderException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.*;
@@ -50,9 +50,19 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
         try {
             ((DefaultAWSEC2ComputeCloudContext) context).getClient().runInstances(runInstancesRequest);
         } catch (AmazonServiceException e) {
-            // TODO check which params were incorrect and add message
-            // http://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-            throw new IllegalArgumentException("Invalid parameters: ");
+            if (e.getStatusCode() < 500) {
+                if (e.getErrorCode().equals("InvalidAMIID.Malformed")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
+                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else {
+                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+                }
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
+            }
         } catch (AmazonClientException e) {
             throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
@@ -66,17 +76,44 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     }
 
     @Override
-    public void stopInstance() {
-        // TODO
-        StopInstancesRequest req = null;
-        StopInstancesResult stopInstancesResult = ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
+    public void stopInstance(List<Instance> instances) {
+        StopInstancesRequest req = new StopInstancesRequest();
+        req.withInstanceIds(instances.stream().map(x -> x.getId()).collect(Collectors.toList()));
+        try {
+            StopInstancesResult stopInstancesResult = ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
+        } catch (AmazonServiceException e) {
+            if (e.getStatusCode() < 500) {
+                // TODO
+                if (e.getErrorCode().equals("IncorrectInstanceState")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
+                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else {
+                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+                }
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
+            }
+        } catch (AmazonClientException e) {
+            throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+        }
     }
 
     @Override
-    public Map<String,InstanceStatus> getInstanceStatus(List<String> instanceIds) {
+    public List<Instance> listInstances() {
+        DescribeInstancesRequest req = new DescribeInstancesRequest();
+
+        DescribeInstancesResult res = ((DefaultAWSEC2ComputeCloudContext) context).getClient().describeInstances(req);
+
         // TODO
-        DescribeInstancesRequest req = null;
-        DescribeInstancesResult describeInstancesResult = ((DefaultAWSEC2ComputeCloudContext) context).getClient().describeInstances(req);
+
+        return null;
+    }
+
+    @Override
+    public Instance getInstance(String instanceId) {
         return null;
     }
 

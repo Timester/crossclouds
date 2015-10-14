@@ -1,11 +1,7 @@
 package net.talqum.crossclouds.compute.node;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015. 09. 27.
- * Time: 9:33
+ * Created by imre on 10/14/15.
  */
-public interface Location {
-    String getZoneName();
+public class Location {
 }
