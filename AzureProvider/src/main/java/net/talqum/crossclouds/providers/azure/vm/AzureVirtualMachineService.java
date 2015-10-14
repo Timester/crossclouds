@@ -45,5 +45,4 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
     public Instance getInstance(String instanceId) {
         return null;
     }
-
 }
