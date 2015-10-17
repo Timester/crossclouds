@@ -3,11 +3,9 @@ package net.talqum.crossclouds.providers.azure.vm;
 import net.talqum.crossclouds.compute.Instance;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
-import net.talqum.crossclouds.compute.common.InstanceStatus;
 import net.talqum.crossclouds.compute.node.Template;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,18 +19,19 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
         super(context);
     }
 
+
     @Override
     public void createAndStartInstance(Template template) {
 
     }
 
     @Override
-    public void startInstance() {
+    public void startInstances(List<Instance> instances) {
 
     }
 
     @Override
-    public void stopInstance(List<Instance> instanceIDs) {
+    public void stopInstances(List<Instance> instances) {
 
     }
 
@@ -42,7 +41,7 @@ public class AzureVirtualMachineService extends AbstractComputeCloud {
     }
 
     @Override
-    public Instance getInstance(String instanceId) {
+    public List<Instance> listInstances(List<String> instanceIDs) {
         return null;
     }
 }

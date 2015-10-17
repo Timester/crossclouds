@@ -4,6 +4,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.*;
 import net.talqum.crossclouds.compute.Instance;
+import net.talqum.crossclouds.compute.InstanceState;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
 import net.talqum.crossclouds.compute.node.Template;
@@ -69,21 +70,39 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     }
 
     @Override
-    public void startInstance() {
-        // TODO
-        StartInstancesRequest req = null;
-        StartInstancesResult startInstancesResult = ((DefaultAWSEC2ComputeCloudContext) context).getClient().startInstances(req);
+    public void startInstances(List<Instance> instances) {
+        StartInstancesRequest req = new StartInstancesRequest();
+        req.withInstanceIds(instances.stream().map(x -> x.getId()).collect(Collectors.toList()));
+
+        try {
+            ((DefaultAWSEC2ComputeCloudContext) context).getClient().startInstances(req);
+        } catch (AmazonServiceException e) {
+            if (e.getStatusCode() < 500) {
+                if (e.getErrorCode().equals("IncorrectInstanceState")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
+                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else {
+                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+                }
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
+            }
+        } catch (AmazonClientException e) {
+            throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+        }
     }
 
     @Override
-    public void stopInstance(List<Instance> instances) {
+    public void stopInstances(List<Instance> instances) {
         StopInstancesRequest req = new StopInstancesRequest();
         req.withInstanceIds(instances.stream().map(x -> x.getId()).collect(Collectors.toList()));
         try {
-            StopInstancesResult stopInstancesResult = ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
+            ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
         } catch (AmazonServiceException e) {
             if (e.getStatusCode() < 500) {
-                // TODO
                 if (e.getErrorCode().equals("IncorrectInstanceState")) {
                     throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
                 } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
@@ -103,18 +122,51 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
 
     @Override
     public List<Instance> listInstances() {
-        DescribeInstancesRequest req = new DescribeInstancesRequest();
-
-        DescribeInstancesResult res = ((DefaultAWSEC2ComputeCloudContext) context).getClient().describeInstances(req);
-
-        // TODO
-
-        return null;
+        return listInstances(new ArrayList<>());
     }
 
     @Override
-    public Instance getInstance(String instanceId) {
-        return null;
+    public List<Instance> listInstances(List<String> instanceIDs) {
+        DescribeInstancesRequest req = new DescribeInstancesRequest();
+        req.withInstanceIds(instanceIDs);
+
+        try {
+            List<net.talqum.crossclouds.compute.Instance> returnList = new ArrayList<>();
+            DescribeInstancesResult result = ((DefaultAWSEC2ComputeCloudContext) context).getClient().describeInstances(req);
+
+            // TODO iter over result pages
+            for (Reservation reservation : result.getReservations()) {
+                for (com.amazonaws.services.ec2.model.Instance instance : reservation.getInstances()) {
+                    // TODO check states
+                    InstanceState state;
+                    if(instance.getState().getName().equals("running")){
+                        state = InstanceState.RUNNING;
+                    } else if (instance.getState().getName().equals("stopped")) {
+                        state = InstanceState.STOPPED;
+                    } else {
+                        state = null;
+                    }
+                    returnList.add(new Instance(instance.getInstanceId(), state));
+                }
+            }
+
+            return returnList;
+
+        } catch (AmazonServiceException e) {
+            if (e.getStatusCode() < 500) {
+                if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
+                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
+                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                } else {
+                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+                }
+            } else {
+                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
+            }
+        } catch (AmazonClientException e) {
+            throw new ClientException(e, ClientErrorCodes.UNKNOWN);
+        }
     }
 
     private String checkTemplate(Template template) {

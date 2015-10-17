@@ -15,8 +15,13 @@ public interface ComputeCloud {
     ComputeCloudContext getContext();
 
     void createAndStartInstance(Template template);
-    void startInstance();
-    void stopInstance(List<Instance> instanceIDs);
+
+    void startInstance(Instance instance);
+    void stopInstance(Instance instance);
+    void startInstances(List<Instance> instances);
+    void stopInstances(List<Instance> instances);
+
     List<Instance> listInstances();
+    List<Instance> listInstances(List<String> instanceIDs);
     Instance getInstance(String instanceId);
 }

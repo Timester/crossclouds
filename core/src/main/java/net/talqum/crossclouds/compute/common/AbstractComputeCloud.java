@@ -1,5 +1,10 @@
 package net.talqum.crossclouds.compute.common;
 
+import net.talqum.crossclouds.compute.Instance;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Imre
@@ -17,5 +22,26 @@ public abstract class AbstractComputeCloud implements ComputeCloud {
     @Override
     public ComputeCloudContext getContext() {
         return context;
+    }
+
+    @Override
+    public void startInstance(Instance instance) {
+        startInstances(Arrays.asList(instance));
+    }
+
+    @Override
+    public void stopInstance(Instance instance) {
+        stopInstances(Arrays.asList(instance));
+    }
+
+    @Override
+    public Instance getInstance(String instanceId) {
+        List<Instance> instances = listInstances(Arrays.asList(instanceId));
+
+        if(instances.size() == 1) {
+            return instances.get(0);
+        } else {
+            return null;
+        }
     }
 }
