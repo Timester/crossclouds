@@ -23,12 +23,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015.05.15.
- * Time: 17:40
- */
 @RunWith(MockitoJUnitRunner.class)
 public class CreateContainerUnitTest {
 
@@ -105,9 +99,9 @@ public class CreateContainerUnitTest {
 
         try {
             blobStore.createContainer(AWSFixtures.TEMP_BUCKET_NAME);
-        } catch (ClientException e) {
+        } catch (Exception e) {
             assertTrue(e instanceof ClientException);
-            assertTrue(e.getErrorCode().equals(ClientErrorCodes.NO_NETWORK));
+            assertTrue(((ClientException)e).getErrorCode().equals(ClientErrorCodes.NO_NETWORK));
         }
 
         verify(client).doesBucketExist(AWSFixtures.TEMP_BUCKET_NAME);

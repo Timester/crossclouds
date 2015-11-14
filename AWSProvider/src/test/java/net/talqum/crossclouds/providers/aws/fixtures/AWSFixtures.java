@@ -1,8 +1,5 @@
 package net.talqum.crossclouds.providers.aws.fixtures;
 
-/**
- * Created by Imre on 2015.03.25..
- */
 public class AWSFixtures {
     public static final String ACC_ID = "AKIAI462AEOYXFLFD2SQ";
     public static final String ACC_SECRET = "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";

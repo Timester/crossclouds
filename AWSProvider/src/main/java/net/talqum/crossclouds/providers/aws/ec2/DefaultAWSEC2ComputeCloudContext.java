@@ -6,12 +6,6 @@ import net.talqum.crossclouds.compute.common.AbstractComputeCloudContext;
 
 import java.io.IOException;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015.05.18.
- * Time: 15:04
- */
 public class DefaultAWSEC2ComputeCloudContext extends AbstractComputeCloudContext implements AWSEC2ComputeCloudContext {
 
     private final AmazonEC2Client ec2Client;
@@ -34,6 +28,6 @@ public class DefaultAWSEC2ComputeCloudContext extends AbstractComputeCloudContex
 
     @Override
     public void close() throws IOException {
-
+        ec2Client.shutdown();
     }
 }

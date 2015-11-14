@@ -1,6 +1,7 @@
 dependencies {
     compile project(':core')
     compile('com.google.apis:google-api-services-storage:v1-rev40-1.20.0')
+    compile('com.google.apis:google-api-services-compute:v1-rev84-1.20.0')
     compile('com.google.http-client:google-http-client-jackson2:1.20.0')
     compile('com.google.oauth-client:google-oauth-client-jetty:1.20.0')
     compile('com.google.api-client:google-api-client:1.20.0')

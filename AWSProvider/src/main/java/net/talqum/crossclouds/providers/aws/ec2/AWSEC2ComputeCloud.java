@@ -18,12 +18,6 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015.05.19.
- * Time: 18:24
- */
 public class AWSEC2ComputeCloud extends AbstractComputeCloud {
 
     protected AWSEC2ComputeCloud(ComputeCloudContext context) {
@@ -51,19 +45,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
         try {
             ((DefaultAWSEC2ComputeCloudContext) context).getClient().runInstances(runInstancesRequest);
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() < 500) {
-                if (e.getErrorCode().equals("InvalidAMIID.Malformed")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
-                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
-                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else {
-                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
-                }
-            } else {
-                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
-            }
+            throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
             throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
@@ -72,24 +54,12 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     @Override
     public void startInstances(List<Instance> instances) {
         StartInstancesRequest req = new StartInstancesRequest();
-        req.withInstanceIds(instances.stream().map(x -> x.getId()).collect(Collectors.toList()));
+        req.withInstanceIds(instances.stream().map(Instance::getId).collect(Collectors.toList()));
 
         try {
             ((DefaultAWSEC2ComputeCloudContext) context).getClient().startInstances(req);
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() < 500) {
-                if (e.getErrorCode().equals("IncorrectInstanceState")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
-                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
-                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else {
-                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
-                }
-            } else {
-                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
-            }
+            throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
             throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
@@ -98,23 +68,11 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     @Override
     public void stopInstances(List<Instance> instances) {
         StopInstancesRequest req = new StopInstancesRequest();
-        req.withInstanceIds(instances.stream().map(x -> x.getId()).collect(Collectors.toList()));
+        req.withInstanceIds(instances.stream().map(Instance::getId).collect(Collectors.toList()));
         try {
             ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() < 500) {
-                if (e.getErrorCode().equals("IncorrectInstanceState")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
-                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
-                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else {
-                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
-                }
-            } else {
-                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
-            }
+            throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
             throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
@@ -153,17 +111,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
             return returnList;
 
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() < 500) {
-                if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
-                    throw new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
-                } else if (e.getErrorCode().equals("InvalidParameterValue")) {
-                    throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-                } else {
-                    throw new ClientException(e, ClientErrorCodes.UNKNOWN);
-                }
-            } else {
-                throw new ProviderException(e, ClientErrorCodes.UNKNOWN);
-            }
+            throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
             throw new ClientException(e, ClientErrorCodes.UNKNOWN);
         }
@@ -200,5 +148,19 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
         }
 
         return errors.stream().collect(Collectors.joining(", "));
+    }
+
+    private ClientException handleAmazonServiceException(AmazonServiceException e) {
+        if (e.getStatusCode() < 500) {
+            if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
+                return new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+            } else if (e.getErrorCode().equals("InvalidParameterValue")) {
+                return new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+            } else {
+                return new ClientException(e, ClientErrorCodes.UNKNOWN);
+            }
+        } else {
+            return new ProviderException(e, ClientErrorCodes.UNKNOWN);
+        }
     }
 }

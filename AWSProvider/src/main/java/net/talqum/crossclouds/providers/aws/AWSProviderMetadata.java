@@ -6,9 +6,6 @@ import net.talqum.crossclouds.providers.aws.s3.DefaultAWSS3BlobStoreContext;
 
 import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 
-/**
- * Created by Imre on 2015.03.07..
- */
 public class AWSProviderMetadata extends AbstractProviderMetadata {
 
     public AWSProviderMetadata() {

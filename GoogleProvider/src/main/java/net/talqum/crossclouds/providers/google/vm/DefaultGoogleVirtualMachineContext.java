@@ -1,4 +1,4 @@
-package net.talqum.crossclouds.providers.google.cloudstorage;
+package net.talqum.crossclouds.providers.google.vm;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -6,9 +6,9 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.storage.Storage;
-import com.google.api.services.storage.StorageScopes;
-import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
+import com.google.api.services.compute.Compute;
+import com.google.api.services.compute.ComputeScopes;
+import net.talqum.crossclouds.compute.common.AbstractComputeCloudContext;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
 import org.slf4j.Logger;
@@ -19,24 +19,23 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext implements GoogleBlobStoreContext {
+public class DefaultGoogleVirtualMachineContext extends AbstractComputeCloudContext implements GoogleVirtualMachinesContext {
 
-    final Logger log = LoggerFactory.getLogger(DefaultGoogleBlobStoreContext.class);
+    final Logger log = LoggerFactory.getLogger(DefaultGoogleVirtualMachineContext.class);
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
 
-    private final Storage cloudStorageClient;
+    private final Compute computeCloudClient;
 
     private final String credentialsFilePath;
     final String applicationName;
     private final String serviceAccountID;
 
-    public DefaultGoogleBlobStoreContext(String applicationName, String serviceAccountID, String credentialsFilePath) {
+    public DefaultGoogleVirtualMachineContext(String applicationName, String serviceAccountID, String credentialsFilePath) {
 
         super();
 
@@ -50,7 +49,11 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
 
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            credential = authorizeWithServiceAccount();
+
+            Set<String> scopes = new HashSet<>();
+            scopes.add(ComputeScopes.COMPUTE);
+
+            credential = authorizeWithServiceAccount(scopes);
         } catch (GeneralSecurityException e) {
             log.error("Auth failure", e);
         } catch (IOException e) {
@@ -59,20 +62,20 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
             log.error("Unexpected error", e);
         }
 
-        setBlobStore(new GoogleBlobStore(this));
+        setComputeCloud(new GoogleVirtualMachineService(this));
 
-        cloudStorageClient = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
+        computeCloudClient = new Compute.Builder(httpTransport, JSON_FACTORY, credential)
                 .setApplicationName(applicationName)
                 .build();
     }
 
     @Override
-    public GoogleBlobStore getBlobStore() {
-        return GoogleBlobStore.class.cast(super.getBlobStore());
+    public GoogleVirtualMachineService getComputeCloud() {
+        return GoogleVirtualMachineService.class.cast(super.getComputeCloud());
     }
 
-    public Storage getClient() {
-        return cloudStorageClient;
+    public Compute getClient() {
+        return computeCloudClient;
     }
 
     @Override
@@ -80,9 +83,7 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
         // TODO
     }
 
-    private GoogleCredential authorizeWithServiceAccount() throws Exception {
-        Set<String> scopes = new HashSet<>();
-        scopes.add(StorageScopes.DEVSTORAGE_FULL_CONTROL);
+    private GoogleCredential authorizeWithServiceAccount(Set<String> scopes) throws Exception {
 
         return new GoogleCredential.Builder()
                 .setTransport(httpTransport)

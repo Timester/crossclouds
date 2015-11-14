@@ -31,6 +31,8 @@ public interface ComputeCloud {
      * provided in the Instance object.
      *
      * @param instance an Instance object identifying the virtual machine to be started
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     void startInstance(Instance instance);
 
@@ -39,6 +41,8 @@ public interface ComputeCloud {
      * provided in the Instance object.
      *
      * @param instance an Instance object identifying the virtual machine to be stopped
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     void stopInstance(Instance instance);
 
@@ -48,6 +52,8 @@ public interface ComputeCloud {
      * provided in the Instance objects.
      *
      * @param instances list of Instance identifiers
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     void startInstances(List<Instance> instances);
 
@@ -56,6 +62,8 @@ public interface ComputeCloud {
      * provided in the Instance objects.
      *
      * @param instances list of Instance identifiers
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     void stopInstances(List<Instance> instances);
 
@@ -63,6 +71,8 @@ public interface ComputeCloud {
      * Lists all instances owned by the user. Returns a list of instance metadata.
      *
      * @return list of Instance objects containing instance metadata, empty list if none was found
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     List<Instance> listInstances();
 
@@ -71,6 +81,8 @@ public interface ComputeCloud {
      *
      * @param instanceIDs a list of virtual machine ids
      * @return list of Instance objects containing instance metadata, empty list if none was found
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     List<Instance> listInstances(List<String> instanceIDs);
 
@@ -79,6 +91,8 @@ public interface ComputeCloud {
      *
      * @param instanceId identifier for a virtual machine
      * @return an Instance object containing instance metadata, or null if virtual machine was not found
+     *
+     * @exception net.talqum.crossclouds.exceptions.ClientException
      */
     Instance getInstance(String instanceId);
 }

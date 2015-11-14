@@ -15,9 +15,6 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Imre on 2015.03.25..
- */
 public class AWSS3BlobStoreAcceptanceTest {
     private static BlobStoreContext ctx;
     private static BlobStore blobStore;

@@ -6,9 +6,6 @@ import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
 
 import java.io.IOException;
 
-/**
- * Created by Imre on 2015.03.04..
- */
 public class DefaultAWSS3BlobStoreContext extends AbstractBlobStoreContext implements AWSS3BlobStoreContext {
 
     private final AmazonS3Client s3Client;

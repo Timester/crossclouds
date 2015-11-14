@@ -3,6 +3,7 @@ package net.talqum.crossclouds.compute.common;
 import net.talqum.crossclouds.compute.Instance;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,17 +27,17 @@ public abstract class AbstractComputeCloud implements ComputeCloud {
 
     @Override
     public void startInstance(Instance instance) {
-        startInstances(Arrays.asList(instance));
+        startInstances(Collections.singletonList(instance));
     }
 
     @Override
     public void stopInstance(Instance instance) {
-        stopInstances(Arrays.asList(instance));
+        stopInstances(Collections.singletonList(instance));
     }
 
     @Override
     public Instance getInstance(String instanceId) {
-        List<Instance> instances = listInstances(Arrays.asList(instanceId));
+        List<Instance> instances = listInstances(Collections.singletonList(instanceId));
 
         if(instances.size() == 1) {
             return instances.get(0);

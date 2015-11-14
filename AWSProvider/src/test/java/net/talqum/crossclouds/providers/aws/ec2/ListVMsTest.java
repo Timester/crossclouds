@@ -9,12 +9,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015. 10. 17.
- * Time: 10:29
- */
 public class ListVMsTest {
 
     private static ComputeCloudContext ctx;
