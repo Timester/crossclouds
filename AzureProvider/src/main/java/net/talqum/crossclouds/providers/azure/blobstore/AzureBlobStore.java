@@ -1,5 +1,6 @@
 package net.talqum.crossclouds.providers.azure.blobstore;
 
+import com.google.common.collect.Lists;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -23,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Imre on 2015.03.04..
@@ -50,13 +52,11 @@ public class AzureBlobStore extends AbstractBlobStore {
     @Override
     public Set<String> listContainers() {
         Iterable<CloudBlobContainer> cloudBlobContainers = ((DefaultAzureBlobStoreContext) context).getClient().listContainers();
-        Set<String> containers = new HashSet<>();
 
-        for (CloudBlobContainer cloudBlobContainer : cloudBlobContainers) {
-            containers.add(cloudBlobContainer.getName());
-        }
-
-        return containers;
+        return Lists.newArrayList(cloudBlobContainers)
+                .stream()
+                .map(CloudBlobContainer::getName)
+                .collect(Collectors.toSet());
     }
 
     @Override

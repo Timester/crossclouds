@@ -42,13 +42,11 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public Set<String> listContainers() {
         List<Bucket> buckets = ((DefaultAWSS3BlobStoreContext) context).getClient().listBuckets();
-        Set<String> containers = new HashSet<>();
 
-        for (Bucket bucket : buckets) {
-            containers.add(bucket.getName());
-        }
-
-        return containers;
+        return buckets
+                .stream()
+                .map(Bucket::getName)
+                .collect(Collectors.toSet());
     }
 
     @Override
