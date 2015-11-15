@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by Imre on 2015.03.04..
  */
 public class FilePayload extends AbstractPayload<File> {
-
     public FilePayload(File data) {
         super(data, data.length());
         checkNotNull(data, "content");

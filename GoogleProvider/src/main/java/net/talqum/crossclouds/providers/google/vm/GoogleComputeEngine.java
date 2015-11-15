@@ -34,7 +34,14 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
             throw new IllegalArgumentException("Invalid template parameters: " + checkStatus);
         }
 
+
+
         //TODO finish
+        // Location az options->be
+        /*
+        Compute.Instances.Insert insertRequest = computeCloudClient.instances().insert(((DefaultGoogleComputeEngineContext) context).projectId,
+                template.getLocation(),null);
+                */
     }
 
     @Override

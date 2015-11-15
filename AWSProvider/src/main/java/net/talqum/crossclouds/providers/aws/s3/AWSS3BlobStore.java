@@ -148,7 +148,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean putBlob(String container, Blob blob) {
-        if(!createContainer(container)) {
+        if(createContainer(container)) {
             log.info("Container \"" + container + "\" not found, now created");
         }
 
