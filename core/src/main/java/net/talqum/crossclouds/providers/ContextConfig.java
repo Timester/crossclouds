@@ -12,7 +12,7 @@ public class ContextConfig {
     private CredentialType credentialType;
 
     private String accId;
-    private String appName;
+    private String projectId;
     private String keyPath;
 
     private String id;
@@ -40,8 +40,8 @@ public class ContextConfig {
         return accId;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getProjectId() {
+        return projectId;
     }
 
     public String getKeyPath() {
@@ -83,8 +83,8 @@ public class ContextConfig {
         return this;
     }
 
-    public ContextConfig setAppName(String appName) {
-        this.appName = appName;
+    public ContextConfig setProjectId(String projectId) {
+        this.projectId = projectId;
         return this;
     }
 
@@ -122,7 +122,7 @@ public class ContextConfig {
     public String toString() {
         return "ContextConfig{" +
                 "accId='" + accId + '\'' +
-                ", applicationName='" + appName + '\'' +
+                ", projectId='" + projectId + '\'' +
                 ", keyPath='" + keyPath + '\'' +
                 ", id='" + id + '\'' +
                 ", secret='" + secret + '\'' +

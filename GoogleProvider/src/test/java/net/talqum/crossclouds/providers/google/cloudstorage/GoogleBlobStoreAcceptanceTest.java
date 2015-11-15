@@ -29,7 +29,7 @@ public class GoogleBlobStoreAcceptanceTest {
                 .addCredentials()
                     .keyBased()
                         .accountId(GoogleFixtures.SERVICE_ACC_ID)
-                        .applicationName(GoogleFixtures.APP_ID)
+                        .projectId(GoogleFixtures.APP_ID)
                         .keyPath(GoogleFixtures.GOOGLE_CREDENTIALS)
                 .build();
 

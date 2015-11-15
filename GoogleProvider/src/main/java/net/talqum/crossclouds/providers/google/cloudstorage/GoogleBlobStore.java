@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Created by Imre on 2015.03.04..
- */
 public class GoogleBlobStore extends AbstractBlobStore {
 
     GoogleBlobStore(DefaultGoogleBlobStoreContext context) {

@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 

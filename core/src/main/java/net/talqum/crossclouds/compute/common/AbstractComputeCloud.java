@@ -6,12 +6,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015.05.17.
- * Time: 11:27
- */
 public abstract class AbstractComputeCloud implements ComputeCloud {
 
     protected final ComputeCloudContext context;

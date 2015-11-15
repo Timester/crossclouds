@@ -95,15 +95,31 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
             // TODO iter over result pages
             for (Reservation reservation : result.getReservations()) {
                 for (com.amazonaws.services.ec2.model.Instance instance : reservation.getInstances()) {
-                    // TODO check states
                     InstanceState state;
-                    if(instance.getState().getName().equals("running")){
-                        state = InstanceState.RUNNING;
-                    } else if (instance.getState().getName().equals("stopped")) {
-                        state = InstanceState.STOPPED;
-                    } else {
-                        state = null;
+                    switch (instance.getState().getName()) {
+                        case "pending":
+                            state = InstanceState.PROVISIONING;
+                            break;
+                        case "running":
+                            state = InstanceState.RUNNING;
+                            break;
+                        case "shutting-down":
+                            state = InstanceState.STOPPING;
+                            break;
+                        case "terminated":
+                            state = InstanceState.TERMINATED;
+                            break;
+                        case "stopping":
+                            state = InstanceState.STOPPING;
+                            break;
+                        case "stopped":
+                            state = InstanceState.STOPPED;
+                            break;
+                        default:
+                            state = InstanceState.UNKNOWN;
                     }
+
+                    // TODO set zone
                     returnList.add(new Instance(instance.getInstanceId(), state));
                 }
             }

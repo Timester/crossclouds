@@ -16,15 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DefaultGoogleVirtualMachineContext extends AbstractComputeCloudContext implements GoogleVirtualMachinesContext {
+public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudContext implements GoogleComputeEngineContext {
 
-    final Logger log = LoggerFactory.getLogger(DefaultGoogleVirtualMachineContext.class);
+    final Logger log = LoggerFactory.getLogger(DefaultGoogleComputeEngineContext.class);
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
@@ -32,16 +30,16 @@ public class DefaultGoogleVirtualMachineContext extends AbstractComputeCloudCont
     private final Compute computeCloudClient;
 
     private final String credentialsFilePath;
-    final String applicationName;
+    final String projectId;
     private final String serviceAccountID;
 
-    public DefaultGoogleVirtualMachineContext(String applicationName, String serviceAccountID, String credentialsFilePath) {
+    public DefaultGoogleComputeEngineContext(String projectId, String serviceAccountID, String credentialsFilePath) {
 
         super();
 
-        log.info("Initializing Google Blobstorecontext");
+        log.info("Initializing Google Compute Engine context");
 
-        this.applicationName = applicationName;
+        this.projectId = projectId;
         this.serviceAccountID = serviceAccountID;
         this.credentialsFilePath = credentialsFilePath;
 
@@ -52,6 +50,7 @@ public class DefaultGoogleVirtualMachineContext extends AbstractComputeCloudCont
 
             Set<String> scopes = new HashSet<>();
             scopes.add(ComputeScopes.COMPUTE);
+            scopes.add(ComputeScopes.DEVSTORAGE_FULL_CONTROL);
 
             credential = authorizeWithServiceAccount(scopes);
         } catch (GeneralSecurityException e) {
@@ -62,16 +61,16 @@ public class DefaultGoogleVirtualMachineContext extends AbstractComputeCloudCont
             log.error("Unexpected error", e);
         }
 
-        setComputeCloud(new GoogleVirtualMachineService(this));
+        setComputeCloud(new GoogleComputeEngine(this));
 
         computeCloudClient = new Compute.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(applicationName)
+                .setApplicationName(projectId)
                 .build();
     }
 
     @Override
-    public GoogleVirtualMachineService getComputeCloud() {
-        return GoogleVirtualMachineService.class.cast(super.getComputeCloud());
+    public GoogleComputeEngine getComputeCloud() {
+        return GoogleComputeEngine.class.cast(super.getComputeCloud());
     }
 
     public Compute getClient() {

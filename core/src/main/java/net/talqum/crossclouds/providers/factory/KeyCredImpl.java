@@ -17,7 +17,7 @@ public class KeyCredImpl implements KeyCred {
     }
 
     @Override
-    public ApplicationName accountId(String accId) {
-        return new ApplicationNameImpl(contextConfig.setAccId(accId));
+    public ProjectId accountId(String accId) {
+        return new ProjectIdImpl(contextConfig.setAccId(accId));
     }
 }

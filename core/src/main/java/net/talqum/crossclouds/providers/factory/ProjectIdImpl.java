@@ -8,15 +8,15 @@ import net.talqum.crossclouds.providers.ContextConfig;
  * Date: 2015. 10. 05.
  * Time: 16:16
  */
-public class ApplicationNameImpl implements ApplicationName {
+public class ProjectIdImpl implements ProjectId {
     private final ContextConfig contextConfig;
 
-    public ApplicationNameImpl(ContextConfig contextConfig) {
+    public ProjectIdImpl(ContextConfig contextConfig) {
         this.contextConfig = contextConfig;
     }
 
     @Override
-    public KeyPath applicationName(String appName) {
-        return new KeyPathImpl(contextConfig.setAppName(appName));
+    public KeyPath projectId(String appName) {
+        return new KeyPathImpl(contextConfig.setProjectId(appName));
     }
 }

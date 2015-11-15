@@ -46,7 +46,7 @@ public class ContextFactory {
                                 .newInstance(config.getId(), config.getSecret());
                     case KEY:
                         return (C) rawType.getConstructor(String.class, String.class, String.class)
-                                .newInstance(config.getAppName(), config.getAccId(), config.getKeyPath());
+                                .newInstance(config.getProjectId(), config.getAccId(), config.getKeyPath());
                     default:
                         throw new IllegalArgumentException("Invalid credential type.");
                 }
@@ -76,6 +76,6 @@ public class ContextFactory {
 
     private static boolean validateKeyBasedConfig(ContextConfig conf) {
         return !isNullOrEmpty(conf.getKeyPath()) && !isNullOrEmpty(conf.getAccId()) &&
-                !isNullOrEmpty(conf.getAppName());
+                !isNullOrEmpty(conf.getProjectId());
     }
 }
