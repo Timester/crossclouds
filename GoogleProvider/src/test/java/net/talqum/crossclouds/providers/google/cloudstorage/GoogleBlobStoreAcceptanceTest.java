@@ -15,9 +15,6 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Imre on 2015.03.25..
- */
 public class GoogleBlobStoreAcceptanceTest {
     private static BlobStoreContext ctx;
     private static BlobStore blobStore;

@@ -1,9 +1,7 @@
 package net.talqum.crossclouds.providers.google.vm;
 
 import com.google.api.services.compute.Compute;
-import com.google.api.services.compute.model.InstanceList;
-import com.google.api.services.compute.model.NetworkInterface;
-import com.google.api.services.compute.model.Operation;
+import com.google.api.services.compute.model.*;
 import net.talqum.crossclouds.compute.Instance;
 import net.talqum.crossclouds.compute.InstanceState;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
@@ -11,11 +9,14 @@ import net.talqum.crossclouds.compute.common.ComputeCloudContext;
 import net.talqum.crossclouds.compute.node.Template;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ProviderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,13 +24,17 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class GoogleComputeEngine extends AbstractComputeCloud {
 
+    final Logger log = LoggerFactory.getLogger(GoogleComputeEngine.class);
+
     private final Compute computeCloudClient;
     private final String projectId;
+    private final String location;
 
     protected GoogleComputeEngine(ComputeCloudContext context) {
         super(context);
         this.computeCloudClient = ((DefaultGoogleComputeEngineContext) context).getClient();
         this.projectId = ((DefaultGoogleComputeEngineContext) context).getProjectId();
+        this.location = ((DefaultGoogleComputeEngineContext) context).getLocation();
     }
 
     @Override
@@ -40,14 +45,28 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
             throw new IllegalArgumentException("Invalid template parameters: " + checkStatus);
         }
 
-
+        // MACHINE TYPE
         com.google.api.services.compute.model.Instance instance = new com.google.api.services.compute.model.Instance();
-        instance.setMachineType(DefaultGoogleComputeEngineContext.COMPUTE_API_URL +
-                projectId + "/zones/" + template.getOptions().getLocation() + "machineTypes/"
+        instance.setMachineType(DefaultGoogleComputeEngineContext.COMPUTE_API_URL + "/" +
+                projectId + "/zones/" + template.getOptions().getLocation() + "/machineTypes/"
                 + template.getHardware().getConfigId());
 
-        instance.setName(template.getName() + "_" + generateRandomString(10));
+        // INSTANCE NAME
+        instance.setName("cc-" + template.getName() + "-" + generateRandomString(10));
 
+        // DISKS AND IMAGE
+        AttachedDiskInitializeParams diskParams = new AttachedDiskInitializeParams();
+        diskParams.setSourceImage(template.getImage().getOperatingSystem());
+
+        AttachedDisk disk = new AttachedDisk();
+        disk.setAutoDelete(true);
+        disk.setBoot(true);
+        disk.setType("PERSISTENT");
+        disk.setInitializeParams(diskParams);
+
+        instance.setDisks(Collections.singletonList(disk));
+
+        // NETWORK
         List<NetworkInterface> networkInterfaces = new ArrayList<>();
         NetworkInterface iface = new NetworkInterface();
         iface.setFactory(DefaultGoogleComputeEngineContext.JSON_FACTORY);
@@ -56,6 +75,7 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
         networkInterfaces.add(iface);
         instance.setNetworkInterfaces(networkInterfaces);
 
+        // ZONE
         instance.setZone(DefaultGoogleComputeEngineContext.COMPUTE_API_URL + "/" + projectId + "/zones/" + template.getOptions().getLocation());
 
          try {
@@ -100,8 +120,8 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     @Override
     public List<Instance> listInstances() {
         try {
-            // TODO zone, project id?
-            Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, "");
+            // TODO zone
+            Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, location);
 
             InstanceList instanceList;
             List<Instance> instances = new ArrayList<>();
@@ -110,7 +130,7 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
                 instanceList = instanceListRequest.execute();
 
                 instances.addAll(instanceList.getItems().stream()
-                        .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), ""))
+                        .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), location))
                         .collect(Collectors.toList()));
 
                 instanceListRequest.setPageToken(instanceList.getNextPageToken());
@@ -125,8 +145,8 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     @Override
     public List<Instance> listInstances(List<String> instanceIDs) {
         try {
-            // TODO zone, project id?
-            Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, "");
+            // TODO zone
+            Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, location);
 
             InstanceList instanceList;
             List<Instance> instances = new ArrayList<>();
@@ -136,7 +156,7 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
                 if(instanceList.getItems() != null) {
                     instances.addAll(instanceList.getItems().stream()
                             .filter(instance -> instanceIDs.contains(String.valueOf(instance.getId())))
-                            .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), ""))
+                            .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), location))
                             .collect(Collectors.toList()));
                 }
 
@@ -169,15 +189,18 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
             if (isNullOrEmpty(template.getImage().getOperatingSystem())) {
                 errors.add("image/os");
             }
-            if (isNullOrEmpty(template.getImage().getCredentials())) {
-                errors.add("image/keypair");
-            }
         }
 
         if(template.getOptions() == null) {
             errors.add("options");
         } else {
-            if(isNullOrEmpty(template.getOptions().getSecurityGroup())) { errors.add("options/security group"); }
+            if(isNullOrEmpty(template.getOptions().getLocation())) {
+                log.warn("No Zone specified, trying default.");
+                if(isNullOrEmpty(location)) {
+                    log.error("No default zone specified.");
+                    errors.add("location");
+                }
+            }
         }
 
         return errors.stream().collect(Collectors.joining(", "));

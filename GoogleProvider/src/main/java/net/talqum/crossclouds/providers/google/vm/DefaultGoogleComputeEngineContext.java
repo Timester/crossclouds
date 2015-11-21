@@ -64,11 +64,11 @@ public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudConte
             log.error("Unexpected error", e);
         }
 
-        setComputeCloud(new GoogleComputeEngine(this));
-
         computeCloudClient = new Compute.Builder(httpTransport, JSON_FACTORY, credential)
                 .setApplicationName(projectId)
                 .build();
+
+        setComputeCloud(new GoogleComputeEngine(this));
     }
 
     @Override

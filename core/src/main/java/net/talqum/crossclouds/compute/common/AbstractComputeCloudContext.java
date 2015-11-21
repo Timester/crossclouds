@@ -16,4 +16,21 @@ public abstract class AbstractComputeCloudContext implements ComputeCloudContext
     public ComputeCloud getComputeCloud() {
         return computeCloud;
     }
+
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    public void setAsync(boolean async) {
+        this.async = async;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
 }
