@@ -13,8 +13,8 @@ public class SecretImpl implements Secret {
     }
 
     @Override
-    public Async secret(String secret) {
-        return new AsyncImpl(contextConfig.setSecret(secret));
+    public Location secret(String secret) {
+        return new LocationImpl(contextConfig.setSecret(secret));
     }
 
     @Override

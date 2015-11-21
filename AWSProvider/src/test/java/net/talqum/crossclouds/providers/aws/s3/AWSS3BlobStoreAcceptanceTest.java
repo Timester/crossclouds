@@ -27,6 +27,7 @@ public class AWSS3BlobStoreAcceptanceTest {
                     .idAndSecretBased()
                         .id(AWSFixtures.ACC_ID)
                         .secret(AWSFixtures.ACC_SECRET)
+                .location(AWSFixtures.ZONE)
                 .build();
 
         blobStore = ctx.getBlobStore();

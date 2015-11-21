@@ -1,6 +1,7 @@
 package net.talqum.crossclouds.providers.azure.blobstore;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.BlobRequestOptions;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
 import net.talqum.crossclouds.providers.ContextConfig;

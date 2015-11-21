@@ -20,4 +20,6 @@ public class AWSFixtures {
 
     public static final String KEYPAIR_NAME = "demokey";
     public static final String SECURITY_GROUP_ID = "default";
+
+    public static final String ZONE = "us-east-1";
 }
