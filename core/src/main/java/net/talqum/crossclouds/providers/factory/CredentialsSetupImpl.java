@@ -3,12 +3,6 @@ package net.talqum.crossclouds.providers.factory;
 import net.talqum.crossclouds.providers.ContextConfig;
 import net.talqum.crossclouds.providers.CredentialType;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015. 10. 05.
- * Time: 16:08
- */
 public class CredentialsSetupImpl implements CredentialsSetup {
     private final ContextConfig contextConfig;
 

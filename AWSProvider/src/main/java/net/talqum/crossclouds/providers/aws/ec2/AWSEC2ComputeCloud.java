@@ -97,7 +97,6 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
             List<net.talqum.crossclouds.compute.Instance> returnList = new ArrayList<>();
             DescribeInstancesResult result = client.describeInstances(req);
 
-            // TODO iter over result pages
             for (Reservation reservation : result.getReservations()) {
                 for (com.amazonaws.services.ec2.model.Instance instance : reservation.getInstances()) {
                     InstanceState state;

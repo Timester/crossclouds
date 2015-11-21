@@ -47,6 +47,7 @@ public class CreateVmAcceptanceTest {
                     .accountId(GoogleFixtures.SERVICE_ACC_ID)
                     .projectId(GoogleFixtures.APP_ID)
                     .keyPath(GoogleFixtures.GOOGLE_CREDENTIALS)
+                .location(GoogleFixtures.ZONE)
                 .build();
 
         computeCloud = ctx.getComputeCloud();
@@ -106,23 +107,6 @@ public class CreateVmAcceptanceTest {
     @Test
     public void createVMFailBecauseOfInvalidParameters() {
         Image di = new Image.Builder("os1")
-                .credentials("cred1")
-                .build();
-
-        Template tmp = new Template.Builder("teszt")
-                .hardware(hardware)
-                .image(di)
-                .options(options)
-                .build();
-
-        exception.expect(ClientException.class);
-
-        computeCloud.createAndStartInstance(tmp);
-    }
-
-    @Test
-    public void createVMFailBecauseOfInvalidParameters2() {
-        Image di = new Image.Builder(GoogleFixtures.IMAGE_ID)
                 .credentials("cred1")
                 .build();
 

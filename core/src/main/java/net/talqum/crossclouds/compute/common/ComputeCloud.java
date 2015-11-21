@@ -5,12 +5,6 @@ import net.talqum.crossclouds.compute.node.Template;
 
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015.05.17.
- * Time: 11:24
- */
 public interface ComputeCloud {
     ComputeCloudContext getContext();
 

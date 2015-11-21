@@ -1,5 +1,6 @@
 package net.talqum.crossclouds.providers.google.vm;
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.model.*;
 import net.talqum.crossclouds.compute.Instance;
@@ -8,6 +9,7 @@ import net.talqum.crossclouds.compute.common.AbstractComputeCloud;
 import net.talqum.crossclouds.compute.common.ComputeCloudContext;
 import net.talqum.crossclouds.compute.node.Template;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
+import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +86,13 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
 
              Operation op = insertRequest.execute();
         } catch (IOException e) {
+             if(e instanceof GoogleJsonResponseException) {
+                 if(((GoogleJsonResponseException)e).getStatusCode() == 400){
+                     throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                 }
+             } else {
+                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
+             }
              throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
         }
 
@@ -120,7 +129,6 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     @Override
     public List<Instance> listInstances() {
         try {
-            // TODO zone
             Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, location);
 
             InstanceList instanceList;
@@ -145,7 +153,6 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     @Override
     public List<Instance> listInstances(List<String> instanceIDs) {
         try {
-            // TODO zone
             Compute.Instances.List instanceListRequest =  computeCloudClient.instances().list(projectId, location);
 
             InstanceList instanceList;
@@ -169,7 +176,6 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
         }
     }
 
-    // TODO
     private String checkTemplate(Template template) {
         List<String> errors = new ArrayList<>(7);
 

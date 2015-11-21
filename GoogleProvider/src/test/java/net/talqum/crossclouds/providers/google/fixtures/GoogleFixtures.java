@@ -15,7 +15,7 @@ public class GoogleFixtures {
     public static final String TEST_STRING_CONTENT = "almafafa";
 
     // VM
-    public static final String IMAGE_ID = "\"https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/backports-debian-7-wheezy-v20151104\"";
+    public static final String IMAGE_ID = "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/backports-debian-7-wheezy-v20151104";
     public static final String ZONE = "europe-west1-b";
     public static final String HW_ID = "f1-micro";
 

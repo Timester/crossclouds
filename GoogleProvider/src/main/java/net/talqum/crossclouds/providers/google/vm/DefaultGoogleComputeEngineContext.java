@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.api.services.compute.Compute;
 import com.google.api.services.compute.ComputeScopes;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloudContext;
@@ -26,6 +27,7 @@ public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudConte
     final Logger log = LoggerFactory.getLogger(DefaultGoogleComputeEngineContext.class);
 
     public static final String COMPUTE_API_URL = "https://www.googleapis.com/compute/v1/projects";
+    public static final String DEFAULT_ZONE = "europe-west1-b";
 
     static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
@@ -45,6 +47,10 @@ public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudConte
         this.credentialsFilePath = cfg.getKeyPath();
         this.async = cfg.isAsync();
         this.location = cfg.getLocation();
+
+        if(Strings.isNullOrEmpty(location)) {
+            this.location = DEFAULT_ZONE;
+        }
 
         Credential credential = null;
 

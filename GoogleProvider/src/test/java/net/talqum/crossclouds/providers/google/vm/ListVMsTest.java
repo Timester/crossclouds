@@ -30,7 +30,6 @@ public class ListVMsTest {
                     .accountId(GoogleFixtures.SERVICE_ACC_ID)
                     .projectId(GoogleFixtures.APP_ID)
                     .keyPath(GoogleFixtures.GOOGLE_CREDENTIALS)
-                .async(true)
                 .location(GoogleFixtures.ZONE)
                 .build();
 
