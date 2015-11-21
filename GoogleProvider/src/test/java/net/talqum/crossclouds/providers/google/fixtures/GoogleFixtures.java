@@ -1,8 +1,5 @@
 package net.talqum.crossclouds.providers.google.fixtures;
 
-/**
- * Created by Imre on 2015.03.25..
- */
 public class GoogleFixtures {
     public static final String APP_ID = "988233632740";
     public static final String GOOGLE_CREDENTIALS = "/home/imre/Documents/IdeaProjects/crossclouds/GoogleProvider/src/test/resources/credentials.p12";

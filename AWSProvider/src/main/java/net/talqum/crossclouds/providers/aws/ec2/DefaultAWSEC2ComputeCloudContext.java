@@ -3,6 +3,7 @@ package net.talqum.crossclouds.providers.aws.ec2;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloudContext;
+import net.talqum.crossclouds.providers.ContextConfig;
 
 import java.io.IOException;
 
@@ -10,11 +11,14 @@ public class DefaultAWSEC2ComputeCloudContext extends AbstractComputeCloudContex
 
     private final AmazonEC2Client ec2Client;
 
-    public DefaultAWSEC2ComputeCloudContext(String identity, String secret) {
+    public DefaultAWSEC2ComputeCloudContext(ContextConfig cfg) {
         super();
         setComputeCloud(new AWSEC2ComputeCloud(this));
 
-        ec2Client = new AmazonEC2Client(new BasicAWSCredentials(identity, secret));
+        ec2Client = new AmazonEC2Client(new BasicAWSCredentials(cfg.getId(), cfg.getSecret()));
+
+        this.async = cfg.isAsync();
+        this.location = cfg.getLocation();
     }
 
     @Override

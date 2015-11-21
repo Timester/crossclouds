@@ -63,7 +63,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
         Set<String> containers = new HashSet<>();
         try {
             Storage.Buckets.List bucketList = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
-                    .list(((DefaultGoogleBlobStoreContext) context).applicationName);
+                    .list(((DefaultGoogleBlobStoreContext) context).projectId);
 
             Buckets buckets;
             do {
@@ -87,7 +87,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             newBucket.setName(container);
             try {
                 Storage.Buckets.Insert insert = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
-                        .insert(((DefaultGoogleBlobStoreContext) context).applicationName, newBucket);
+                        .insert(((DefaultGoogleBlobStoreContext) context).projectId, newBucket);
 
                 insert.execute();
 

@@ -11,6 +11,7 @@ import com.google.api.services.storage.StorageScopes;
 import net.talqum.crossclouds.blobstorage.common.AbstractBlobStoreContext;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
+import net.talqum.crossclouds.providers.ContextConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,18 +31,18 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
     private final Storage cloudStorageClient;
 
     private final String credentialsFilePath;
-    final String applicationName;
+    final String projectId;
     private final String serviceAccountID;
 
-    public DefaultGoogleBlobStoreContext(String applicationName, String serviceAccountID, String credentialsFilePath) {
+    public DefaultGoogleBlobStoreContext(ContextConfig cfg) {
 
         super();
 
-        log.info("Initializing Google Blobstorecontext");
-
-        this.applicationName = applicationName;
-        this.serviceAccountID = serviceAccountID;
-        this.credentialsFilePath = credentialsFilePath;
+        this.projectId = cfg.getProjectId();
+        this.serviceAccountID = cfg.getAccId();
+        this.credentialsFilePath = cfg.getKeyPath();
+        this.async = cfg.isAsync();
+        this.location = cfg.getLocation();
 
         Credential credential = null;
 
@@ -59,8 +60,10 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
         setBlobStore(new GoogleBlobStore(this));
 
         cloudStorageClient = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(applicationName)
+                .setApplicationName(projectId)
                 .build();
+
+
     }
 
     @Override

@@ -5,9 +5,6 @@ import com.google.common.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Imre on 2015.03.07..
- */
 public abstract class AbstractProviderMetadata implements ProviderMetadata {
     private final String id;
     protected final List<TypeToken<? extends Context>> services;

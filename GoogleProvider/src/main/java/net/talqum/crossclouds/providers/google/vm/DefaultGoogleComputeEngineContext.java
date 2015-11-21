@@ -11,6 +11,7 @@ import com.google.api.services.compute.ComputeScopes;
 import net.talqum.crossclouds.compute.common.AbstractComputeCloudContext;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
+import net.talqum.crossclouds.providers.ContextConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,24 +25,26 @@ public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudConte
 
     final Logger log = LoggerFactory.getLogger(DefaultGoogleComputeEngineContext.class);
 
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    public static final String COMPUTE_API_URL = "https://www.googleapis.com/compute/v1/projects";
+
+    static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
 
     private final Compute computeCloudClient;
 
     private final String credentialsFilePath;
-    final String projectId;
+    private final String projectId;
     private final String serviceAccountID;
 
-    public DefaultGoogleComputeEngineContext(String projectId, String serviceAccountID, String credentialsFilePath) {
+    public DefaultGoogleComputeEngineContext(ContextConfig cfg) {
 
         super();
 
-        log.info("Initializing Google Compute Engine context");
-
-        this.projectId = projectId;
-        this.serviceAccountID = serviceAccountID;
-        this.credentialsFilePath = credentialsFilePath;
+        this.projectId = cfg.getProjectId();
+        this.serviceAccountID = cfg.getAccId();
+        this.credentialsFilePath = cfg.getKeyPath();
+        this.async = cfg.isAsync();
+        this.location = cfg.getLocation();
 
         Credential credential = null;
 
@@ -80,6 +83,10 @@ public class DefaultGoogleComputeEngineContext extends AbstractComputeCloudConte
     @Override
     public void close() throws IOException {
         // TODO
+    }
+
+    public String getProjectId() {
+        return projectId;
     }
 
     private GoogleCredential authorizeWithServiceAccount(Set<String> scopes) throws Exception {

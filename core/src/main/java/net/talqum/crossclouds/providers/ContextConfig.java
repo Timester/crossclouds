@@ -1,11 +1,5 @@
 package net.talqum.crossclouds.providers;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015. 10. 05.
- * Time: 16:19
- */
 public class ContextConfig {
     private String providerId;
 

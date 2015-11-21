@@ -2,6 +2,7 @@ package net.talqum.crossclouds.providers.aws.ec2;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.*;
 import net.talqum.crossclouds.compute.Instance;
 import net.talqum.crossclouds.compute.InstanceState;
@@ -19,9 +20,13 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Strings.*;
 
 public class AWSEC2ComputeCloud extends AbstractComputeCloud {
+    
+    private final AmazonEC2Client client;
 
     protected AWSEC2ComputeCloud(ComputeCloudContext context) {
         super(context);
+
+        this.client = ((DefaultAWSEC2ComputeCloudContext) context).getClient();
     }
 
     @Override
@@ -43,7 +48,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
                 .withSecurityGroups(template.getOptions().getSecurityGroup());
 
         try {
-            ((DefaultAWSEC2ComputeCloudContext) context).getClient().runInstances(runInstancesRequest);
+            client.runInstances(runInstancesRequest);
         } catch (AmazonServiceException e) {
             throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
@@ -57,7 +62,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
         req.withInstanceIds(instances.stream().map(Instance::getId).collect(Collectors.toList()));
 
         try {
-            ((DefaultAWSEC2ComputeCloudContext) context).getClient().startInstances(req);
+            client.startInstances(req);
         } catch (AmazonServiceException e) {
             throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
@@ -70,7 +75,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
         StopInstancesRequest req = new StopInstancesRequest();
         req.withInstanceIds(instances.stream().map(Instance::getId).collect(Collectors.toList()));
         try {
-            ((DefaultAWSEC2ComputeCloudContext) context).getClient().stopInstances(req);
+            client.stopInstances(req);
         } catch (AmazonServiceException e) {
             throw handleAmazonServiceException(e);
         } catch (AmazonClientException e) {
@@ -90,7 +95,7 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
 
         try {
             List<net.talqum.crossclouds.compute.Instance> returnList = new ArrayList<>();
-            DescribeInstancesResult result = ((DefaultAWSEC2ComputeCloudContext) context).getClient().describeInstances(req);
+            DescribeInstancesResult result = client.describeInstances(req);
 
             // TODO iter over result pages
             for (Reservation reservation : result.getReservations()) {

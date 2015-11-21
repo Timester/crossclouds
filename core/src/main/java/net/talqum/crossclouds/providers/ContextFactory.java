@@ -11,9 +11,6 @@ import java.util.List;
 import static com.google.common.base.Strings.*;
 import static net.talqum.crossclouds.util.reflect.TypeConverter.typeToken;
 
-/**
- * Created by Imre on 2015.03.07..
- */
 public class ContextFactory {
 
     private static ProviderMetadata getProviderMetadata(String provider) {
@@ -42,11 +39,8 @@ public class ContextFactory {
             if (rawType != null) {
                 switch (config.getCredentialType()) {
                     case ID_SECRET:
-                        return (C) rawType.getConstructor(String.class, String.class)
-                                .newInstance(config.getId(), config.getSecret());
                     case KEY:
-                        return (C) rawType.getConstructor(String.class, String.class, String.class)
-                                .newInstance(config.getProjectId(), config.getAccId(), config.getKeyPath());
+                        return (C) rawType.getConstructor(ContextConfig.class).newInstance(config);
                     default:
                         throw new IllegalArgumentException("Invalid credential type.");
                 }

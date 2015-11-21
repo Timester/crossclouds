@@ -1,11 +1,5 @@
 package net.talqum.crossclouds.compute.node;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Imre
- * Date: 2015. 10. 03.
- * Time: 16:37
- */
 public class Hardware {
     private final String configId;
 
