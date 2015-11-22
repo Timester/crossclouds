@@ -57,13 +57,11 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
             log.error("Unexpected error", e);
         }
 
-        setBlobStore(new GoogleBlobStore(this));
-
         cloudStorageClient = new Storage.Builder(httpTransport, JSON_FACTORY, credential)
                 .setApplicationName(projectId)
                 .build();
 
-
+        setBlobStore(new GoogleBlobStore(this));
     }
 
     @Override

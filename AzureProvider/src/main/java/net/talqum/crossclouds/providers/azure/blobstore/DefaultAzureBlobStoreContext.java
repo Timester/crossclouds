@@ -23,10 +23,10 @@ public class DefaultAzureBlobStoreContext extends AbstractBlobStoreContext imple
         CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
         this.blobClient = storageAccount.createCloudBlobClient();
 
-        setBlobStore(new AzureBlobStore(this));
-
         this.async = cfg.isAsync();
         this.location = cfg.getLocation();
+
+        setBlobStore(new AzureBlobStore(this));
     }
 
     @Override

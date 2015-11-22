@@ -22,4 +22,8 @@ public class AWSFixtures {
     public static final String SECURITY_GROUP_ID = "default";
 
     public static final String ZONE = "us-east-1";
+
+    public static final String RUNNING_INSTANCE_ID = "i-70fb58d2";
+
+    public static final String NONEXISTENT_INSTANCE_ID = "i-123abcde";
 }

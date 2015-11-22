@@ -21,7 +21,6 @@ public class DefaultAWSS3BlobStoreContext extends AbstractBlobStoreContext imple
 
     public DefaultAWSS3BlobStoreContext(ContextConfig cfg) {
         super();
-        setBlobStore(new AWSS3BlobStore(this));
 
         this.s3Client = new AmazonS3Client(new BasicAWSCredentials(cfg.getId(), cfg.getSecret()));
 
@@ -37,6 +36,8 @@ public class DefaultAWSS3BlobStoreContext extends AbstractBlobStoreContext imple
 
         this.async = cfg.isAsync();
         this.location = cfg.getLocation();
+
+        setBlobStore(new AWSS3BlobStore(this));
     }
 
     @Override

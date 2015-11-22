@@ -21,7 +21,6 @@ public class DefaultAWSEC2ComputeCloudContext extends AbstractComputeCloudContex
 
     public DefaultAWSEC2ComputeCloudContext(ContextConfig cfg) {
         super();
-        setComputeCloud(new AWSEC2ComputeCloud(this));
 
         ec2Client = new AmazonEC2Client(new BasicAWSCredentials(cfg.getId(), cfg.getSecret()));
 
@@ -37,6 +36,8 @@ public class DefaultAWSEC2ComputeCloudContext extends AbstractComputeCloudContex
 
         this.async = cfg.isAsync();
         this.location = cfg.getLocation();
+
+        setComputeCloud(new AWSEC2ComputeCloud(this));
     }
 
     @Override

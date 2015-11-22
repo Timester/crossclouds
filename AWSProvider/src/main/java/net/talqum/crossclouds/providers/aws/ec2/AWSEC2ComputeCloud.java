@@ -123,8 +123,14 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
                             state = InstanceState.UNKNOWN;
                     }
 
-                    // TODO set zone
-                    returnList.add(new Instance(instance.getInstanceId(), state));
+                    Instance inst = new Instance.Builder(instance.getInstanceId())
+                            .state(state)
+                            .hwConfig(instance.getInstanceType())
+                            .imageId(instance.getImageId())
+                            .zone(instance.getPlacement().getAvailabilityZone())
+                            .build();
+
+                    returnList.add(inst);
                 }
             }
 
@@ -172,12 +178,15 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
 
     private ClientException handleAmazonServiceException(AmazonServiceException e) {
         if (e.getStatusCode() < 500) {
-            if (e.getErrorCode().equals("InvalidKeyPair.NotFound")) {
-                return new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
-            } else if (e.getErrorCode().equals("InvalidParameterValue")) {
-                return new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
-            } else {
-                return new ClientException(e, ClientErrorCodes.UNKNOWN);
+            switch (e.getErrorCode()) {
+                case "InvalidKeyPair.NotFound":
+                    return new ClientException(e, ClientErrorCodes.NONEXISTENT_KEYPAIR);
+                case "InvalidInstanceID.NotFound":
+                    return new ClientException(e, ClientErrorCodes.INSTANCE_NOT_FOUND);
+                case "InvalidParameterValue":
+                    return new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
+                default:
+                    return new ClientException(e, ClientErrorCodes.UNKNOWN);
             }
         } else {
             return new ProviderException(e, ClientErrorCodes.UNKNOWN);
