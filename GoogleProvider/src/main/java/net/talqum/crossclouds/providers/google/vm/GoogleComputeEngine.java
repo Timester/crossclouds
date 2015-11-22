@@ -102,10 +102,22 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     public void startInstances(List<Instance> instances) {
         try {
             for (Instance instance : instances) {
-                Compute.Instances.Start startInsanceRequest = computeCloudClient.instances()
-                        .start(projectId, instance.getZone(), instance.getId());
+                String zone = instance.getZone();
 
-                startInsanceRequest.execute();
+                if(isNullOrEmpty(instance.getZone())) {
+                    log.warn("No Zone specified in Instance, trying default.");
+                    if(isNullOrEmpty(location)) {
+                        log.error("No default zone specified.");
+                        throw new IllegalArgumentException("No location specified (neither in instance nor default)");
+                    } else {
+                        zone = location;
+                    }
+                }
+
+                Compute.Instances.Start startInstanceRequest = computeCloudClient.instances()
+                        .start(projectId, zone, instance.getId());
+
+                startInstanceRequest.execute();
             }
         } catch (IOException e) {
             throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
@@ -116,8 +128,20 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     public void stopInstances(List<Instance> instances) {
         try {
             for (Instance instance : instances) {
+                String zone = instance.getZone();
+
+                if(isNullOrEmpty(instance.getZone())) {
+                    log.warn("No Zone specified in Instance, trying default.");
+                    if(isNullOrEmpty(location)) {
+                        log.error("No default zone specified.");
+                        throw new IllegalArgumentException("No location specified (neither in instance nor default)");
+                    } else {
+                        zone = location;
+                    }
+                }
+
                 Compute.Instances.Stop stopInstanceRequest = computeCloudClient.instances()
-                        .stop(projectId, instance.getZone(), instance.getId());
+                        .stop(projectId, zone, instance.getId());
 
                 stopInstanceRequest.execute();
             }
@@ -138,7 +162,7 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
                 instanceList = instanceListRequest.execute();
 
                 instances.addAll(instanceList.getItems().stream()
-                        .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), location))
+                        .map(this::parseResult)
                         .collect(Collectors.toList()));
 
                 instanceListRequest.setPageToken(instanceList.getNextPageToken());
@@ -162,13 +186,17 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
                 instanceList = instanceListRequest.execute();
                 if(instanceList.getItems() != null) {
                     instances.addAll(instanceList.getItems().stream()
-                            .filter(instance -> instanceIDs.contains(String.valueOf(instance.getId())))
-                            .map(instance -> new Instance(String.valueOf(instance.getId()), extractInstanceState(instance.getStatus()), location))
+                            .filter(instance -> instanceIDs.contains(String.valueOf(instance.getName())))
+                            .map(this::parseResult)
                             .collect(Collectors.toList()));
                 }
 
                 instanceListRequest.setPageToken(instanceList.getNextPageToken());
             } while (null != instanceList.getNextPageToken());
+
+            if(instances.size() != instanceIDs.size()) {
+                throw new ClientException(ClientErrorCodes.INSTANCE_NOT_FOUND);
+            }
 
             return instances;
         } catch (IOException e) {
@@ -177,9 +205,13 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     }
 
     private String checkTemplate(Template template) {
-        List<String> errors = new ArrayList<>(7);
+        List<String> errors = new ArrayList<>(8);
 
         if(template == null) { return "template"; }
+
+        if(isNullOrEmpty(template.getName())) {
+            errors.add("name");
+        }
 
         if(template.getHardware() == null) {
             errors.add("hardware");
@@ -241,5 +273,14 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
         String rand = new BigInteger(130, new SecureRandom()).toString(32);
 
         return rand.substring(0, length);
+    }
+
+    private Instance parseResult(com.google.api.services.compute.model.Instance i) {
+
+        return new Instance.Builder(i.getName())
+                .state(extractInstanceState(i.getStatus()))
+                .hwConfig(i.getMachineType().substring(i.getMachineType().lastIndexOf("/")+1))
+                .zone(i.getZone().substring(i.getZone().lastIndexOf("/")+1))
+                .build();
     }
 }

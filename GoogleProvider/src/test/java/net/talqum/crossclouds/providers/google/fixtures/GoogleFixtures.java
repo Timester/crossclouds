@@ -19,4 +19,8 @@ public class GoogleFixtures {
     public static final String ZONE = "europe-west1-b";
     public static final String HW_ID = "f1-micro";
 
+    public static final String RUNNING_INSTANCE_ID = "cc-teszt-b6hglkuune";
+
+    public static final String NONEXISTENT_INSTANCE_ID = "cc-nonexistent-b6hglkuune";
+
 }
