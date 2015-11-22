@@ -23,10 +23,10 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
     
     private final AmazonEC2Client client;
 
-    protected AWSEC2ComputeCloud(ComputeCloudContext context) {
+    protected AWSEC2ComputeCloud(DefaultAWSEC2ComputeCloudContext context) {
         super(context);
 
-        this.client = ((DefaultAWSEC2ComputeCloudContext) context).getClient();
+        this.client = context.getClient();
     }
 
     @Override

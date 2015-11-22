@@ -27,15 +27,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GoogleBlobStore extends AbstractBlobStore {
+    
+    private final com.google.api.services.storage.Storage client; 
 
     GoogleBlobStore(DefaultGoogleBlobStoreContext context) {
         super(context, LoggerFactory.getLogger(GoogleBlobStore.class));
+        
+        this.client = context.getClient();
     }
 
     @Override
     public boolean containerExists(String container) {
         try {
-            Storage.Buckets.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().buckets().get(container);
+            Storage.Buckets.Get get = client.buckets().get(container);
             get.setProjection("full");
             Bucket bucket = get.execute();
 
@@ -62,7 +66,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     public Set<String> listContainers() {
         Set<String> containers = new HashSet<>();
         try {
-            Storage.Buckets.List bucketList = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
+            Storage.Buckets.List bucketList = client.buckets()
                     .list(((DefaultGoogleBlobStoreContext) context).projectId);
 
             Buckets buckets;
@@ -86,7 +90,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
             Bucket newBucket = new Bucket();
             newBucket.setName(container);
             try {
-                Storage.Buckets.Insert insert = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
+                Storage.Buckets.Insert insert = client.buckets()
                         .insert(((DefaultGoogleBlobStoreContext) context).projectId, newBucket);
 
                 insert.execute();
@@ -102,7 +106,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     public Set<String> listContainerContent(String container) {
         Set<String> returnValue = new HashSet<>();
         try {
-            Storage.Objects.List listObjects = ((DefaultGoogleBlobStoreContext) context).getClient().objects().list(container);
+            Storage.Objects.List listObjects = client.objects().list(container);
             com.google.api.services.storage.model.Objects objects;
             do {
                 objects = listObjects.execute();
@@ -134,7 +138,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     @Override
     public void deleteContainer(String container) {
         try {
-            Storage.Buckets.Delete delete = ((DefaultGoogleBlobStoreContext) context).getClient().buckets()
+            Storage.Buckets.Delete delete = client.buckets()
                     .delete(container);
 
             delete.execute();
@@ -154,7 +158,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     @Override
     public boolean blobExists(String container, String blobName) {
         try {
-            Storage.Objects.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().objects().get(container, blobName);
+            Storage.Objects.Get get = client.objects().get(container, blobName);
             get.execute();
 
             return true;
@@ -173,8 +177,8 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean putBlob(String container, Blob blob) {
-        if(!containerExists(container)) {
-            createContainer(container);
+        if(createContainer(container)) {
+            log.info("Container \"" + container + "\" not found, now created");
         }
 
         try {
@@ -184,7 +188,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
 
             InputStreamContent mediaContent = new InputStreamContent(blob.getPayload().getContentType().toString(), blob.getPayload().openStream());
 
-            Storage.Objects.Insert insert = ((DefaultGoogleBlobStoreContext) context).getClient().objects()
+            Storage.Objects.Insert insert = client.objects()
                     .insert(container, metaData,mediaContent);
 
             insert.setName(blob.getName());
@@ -204,7 +208,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     @Override
     public Blob getBlob(String container, String blobName) {
         try {
-            Storage.Objects.Get get = ((DefaultGoogleBlobStoreContext) context).getClient().objects()
+            Storage.Objects.Get get = client.objects()
                     .get(container, blobName);
 
             File f = File.createTempFile(blobName.substring(0, blobName.lastIndexOf('.')),
@@ -243,7 +247,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     @Override
     public void removeBlob(String container, String blobName) {
         try {
-            Storage.Objects.Delete delete = ((DefaultGoogleBlobStoreContext) context).getClient().objects()
+            Storage.Objects.Delete delete = client.objects()
                     .delete(container, blobName);
 
             delete.execute();
@@ -265,7 +269,7 @@ public class GoogleBlobStore extends AbstractBlobStore {
     public long countBlobs(String container) {
         long retVal = 0;
         try {
-            Storage.Objects.List listObjects = ((DefaultGoogleBlobStoreContext) context).getClient().objects().list(container);
+            Storage.Objects.List listObjects = client.objects().list(container);
             com.google.api.services.storage.model.Objects objects;
             do {
                 objects = listObjects.execute();

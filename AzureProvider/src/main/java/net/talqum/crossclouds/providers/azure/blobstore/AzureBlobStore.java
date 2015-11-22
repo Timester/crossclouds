@@ -26,9 +26,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Created by Imre on 2015.03.04..
- */
 public class AzureBlobStore extends AbstractBlobStore {
 
     AzureBlobStore(DefaultAzureBlobStoreContext context) {
@@ -133,7 +130,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean putBlob(String container, Blob blob) {
-        if(!createContainer(container)) {
+        if(createContainer(container)) {
             log.info("Container \"" + container + "\" not found, now created");
         }
 

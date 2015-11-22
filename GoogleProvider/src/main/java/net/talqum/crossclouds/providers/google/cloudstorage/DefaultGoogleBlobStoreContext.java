@@ -27,7 +27,7 @@ public class DefaultGoogleBlobStoreContext extends AbstractBlobStoreContext impl
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static HttpTransport httpTransport;
-
+    
     private final Storage cloudStorageClient;
 
     private final String credentialsFilePath;
