@@ -32,11 +32,11 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
     private final String projectId;
     private final String location;
 
-    protected GoogleComputeEngine(ComputeCloudContext context) {
+    protected GoogleComputeEngine(DefaultGoogleComputeEngineContext context) {
         super(context);
-        this.computeCloudClient = ((DefaultGoogleComputeEngineContext) context).getClient();
-        this.projectId = ((DefaultGoogleComputeEngineContext) context).getProjectId();
-        this.location = ((DefaultGoogleComputeEngineContext) context).getLocation();
+        this.computeCloudClient = context.getClient();
+        this.projectId = context.getProjectId();
+        this.location = context.getLocation();
     }
 
     @Override
@@ -47,10 +47,20 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
             throw new IllegalArgumentException("Invalid template parameters: " + checkStatus);
         }
 
+        String zone = template.getOptions().getLocation();
+
+        if(isNullOrEmpty(zone)) {
+            if(isNullOrEmpty(location)) {
+                throw new IllegalArgumentException("No location specified (neither in instance nor default)");
+            } else {
+                zone = location;
+            }
+        }
+
         // MACHINE TYPE
         com.google.api.services.compute.model.Instance instance = new com.google.api.services.compute.model.Instance();
         instance.setMachineType(DefaultGoogleComputeEngineContext.COMPUTE_API_URL + "/" +
-                projectId + "/zones/" + template.getOptions().getLocation() + "/machineTypes/"
+                projectId + "/zones/" + zone + "/machineTypes/"
                 + template.getHardware().getConfigId());
 
         // INSTANCE NAME
@@ -78,7 +88,7 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
         instance.setNetworkInterfaces(networkInterfaces);
 
         // ZONE
-        instance.setZone(DefaultGoogleComputeEngineContext.COMPUTE_API_URL + "/" + projectId + "/zones/" + template.getOptions().getLocation());
+        instance.setZone(DefaultGoogleComputeEngineContext.COMPUTE_API_URL + "/" + projectId + "/zones/" + zone);
 
          try {
              Compute.Instances.Insert insertRequest = computeCloudClient.instances().insert(projectId,
@@ -225,18 +235,6 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
         } else {
             if (isNullOrEmpty(template.getImage().getOperatingSystem())) {
                 errors.add("image/os");
-            }
-        }
-
-        if(template.getOptions() == null) {
-            errors.add("options");
-        } else {
-            if(isNullOrEmpty(template.getOptions().getLocation())) {
-                log.warn("No Zone specified, trying default.");
-                if(isNullOrEmpty(location)) {
-                    log.error("No default zone specified.");
-                    errors.add("location");
-                }
             }
         }
 

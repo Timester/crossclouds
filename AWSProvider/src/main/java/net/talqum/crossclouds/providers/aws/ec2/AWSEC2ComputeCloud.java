@@ -12,6 +12,8 @@ import net.talqum.crossclouds.compute.node.Template;
 import net.talqum.crossclouds.exceptions.ClientErrorCodes;
 import net.talqum.crossclouds.exceptions.ClientException;
 import net.talqum.crossclouds.exceptions.ProviderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +22,17 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Strings.*;
 
 public class AWSEC2ComputeCloud extends AbstractComputeCloud {
+
+    final Logger log = LoggerFactory.getLogger(AWSEC2ComputeCloud.class);
     
     private final AmazonEC2Client client;
+    private final String location;
 
     protected AWSEC2ComputeCloud(DefaultAWSEC2ComputeCloudContext context) {
         super(context);
 
         this.client = context.getClient();
+        this.location = context.getLocation();
     }
 
     @Override
@@ -46,6 +52,12 @@ public class AWSEC2ComputeCloud extends AbstractComputeCloud {
                 .withMaxCount(template.getOptions().getMaxInstanceCount())
                 .withKeyName(template.getImage().getCredentials())
                 .withSecurityGroups(template.getOptions().getSecurityGroup());
+
+        if(!isNullOrEmpty(template.getOptions().getLocation())) {
+            runInstancesRequest.withPlacement(new Placement().withAvailabilityZone(template.getOptions().getLocation()));
+        } else if(!isNullOrEmpty(location)) {
+            runInstancesRequest.withPlacement(new Placement().withAvailabilityZone(location));
+        }
 
         try {
             client.runInstances(runInstancesRequest);
