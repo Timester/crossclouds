@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AWSS3BlobStore extends AbstractBlobStore {
+    
+    private final AmazonS3Client client;
 
     public static final String NO_SUCH_CONTAINER = "NoSuchBucket";
     public static final String NO_SUCH_KEY = "NoSuchKey";
@@ -29,16 +31,18 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     AWSS3BlobStore(DefaultAWSS3BlobStoreContext context) {
         super(context, LoggerFactory.getLogger(AWSS3BlobStore.class));
+        
+        this.client = context.getClient();
     }
 
     @Override
     public boolean containerExists(String container) {
-        return ((DefaultAWSS3BlobStoreContext) context).getClient().doesBucketExist(container);
+        return client.doesBucketExist(container);
     }
 
     @Override
     public Set<String> listContainers() {
-        List<Bucket> buckets = ((DefaultAWSS3BlobStoreContext) context).getClient().listBuckets();
+        List<Bucket> buckets = client.listBuckets();
 
         return buckets
                 .stream()
@@ -52,7 +56,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
             if (containerExists(container)) {
                 return false;
             } else {
-                ((DefaultAWSS3BlobStoreContext) context).getClient().createBucket(new CreateBucketRequest(container));
+                client.createBucket(new CreateBucketRequest(container));
                 return true;
             }
         } catch (AmazonServiceException ase) {
@@ -72,7 +76,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     public Set<String> listContainerContent(String container) {
         Set<String> names = new HashSet<>();
         try{
-            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getClient();
             ObjectListing objectListing = client.listObjects(container);
             List<S3ObjectSummary> objectSummaries = objectListing.getObjectSummaries();
 
@@ -109,7 +112,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public void deleteContainer(String container) {
         try {
-            ((DefaultAWSS3BlobStoreContext) context).getClient().deleteBucket(container);
+            client.deleteBucket(container);
         } catch (AmazonServiceException ase) {
             switch (ase.getErrorCode()){
                 case NO_SUCH_CONTAINER:
@@ -128,7 +131,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public boolean blobExists(String container, String blobName) {
-        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getClient().getObject(container, blobName)) {
+        try(S3Object s3Object = client.getObject(container, blobName)) {
             return true;
         } catch (AmazonS3Exception s3Exception){
             switch (s3Exception.getErrorCode()){
@@ -173,7 +176,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) {
-        try(S3Object s3Object = ((DefaultAWSS3BlobStoreContext) context).getClient().getObject(container, blobName)) {
+        try(S3Object s3Object = client.getObject(container, blobName)) {
             File f = File.createTempFile(blobName.substring(0, blobName.lastIndexOf('.')),
                     blobName.substring(blobName.lastIndexOf('.')));
 
@@ -209,7 +212,7 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public void removeBlob(String container, String blobName) {
         try {
-            ((DefaultAWSS3BlobStoreContext) context).getClient().deleteObject(container, blobName);
+            client.deleteObject(container, blobName);
         } catch (AmazonServiceException ase) {
             switch (ase.getErrorCode()){
                 case NO_SUCH_KEY:
@@ -229,7 +232,6 @@ public class AWSS3BlobStore extends AbstractBlobStore {
     @Override
     public long countBlobs(String container) {
         try {
-            AmazonS3Client client = ((DefaultAWSS3BlobStoreContext) context).getClient();
             ObjectListing objectListing = client.listObjects(container);
             long count = objectListing.getObjectSummaries().size();
             boolean truncated = objectListing.isTruncated();

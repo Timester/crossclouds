@@ -90,9 +90,8 @@ public class GoogleComputeEngine extends AbstractComputeCloud {
                  if(((GoogleJsonResponseException)e).getStatusCode() == 400){
                      throw new ClientException(e, ClientErrorCodes.INVALID_PARAMETER);
                  }
-             } else {
-                 throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
              }
+
              throw new ProviderException(e, ClientErrorCodes.IO_ERROR);
         }
 

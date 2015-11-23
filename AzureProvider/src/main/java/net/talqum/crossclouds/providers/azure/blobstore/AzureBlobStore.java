@@ -27,15 +27,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AzureBlobStore extends AbstractBlobStore {
+    
+    private final CloudBlobClient client;
 
     AzureBlobStore(DefaultAzureBlobStoreContext context) {
         super(context, LoggerFactory.getLogger(AzureBlobStore.class));
+        
+        client = context.getClient();
     }
 
     @Override
     public boolean containerExists(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             return containerReference.exists();
@@ -48,7 +50,7 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public Set<String> listContainers() {
-        Iterable<CloudBlobContainer> cloudBlobContainers = ((DefaultAzureBlobStoreContext) context).getClient().listContainers();
+        Iterable<CloudBlobContainer> cloudBlobContainers = client.listContainers();
 
         return Lists.newArrayList(cloudBlobContainers)
                 .stream()
@@ -58,8 +60,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean createContainer(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             return containerReference.createIfNotExists();
@@ -72,7 +72,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public Set<String> listContainerContent(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
         Set<String> content = new HashSet<>();
 
         try {
@@ -95,8 +94,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public void deleteContainer(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             containerReference.deleteIfExists();
@@ -111,8 +108,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public boolean blobExists(String container, String blobName) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blobName);
@@ -134,8 +129,6 @@ public class AzureBlobStore extends AbstractBlobStore {
             log.info("Container \"" + container + "\" not found, now created");
         }
 
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blob.getName());
@@ -154,7 +147,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public Blob getBlob(String container, String blobName) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
         try{
             CloudBlobContainer containerReference = client.getContainerReference(container);
 
@@ -189,8 +181,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public void removeBlob(String container, String blobName) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             CloudBlockBlob blockBlobReference = containerReference.getBlockBlobReference(blobName);
@@ -214,8 +204,6 @@ public class AzureBlobStore extends AbstractBlobStore {
 
     @Override
     public long countBlobs(String container) {
-        CloudBlobClient client = ((DefaultAzureBlobStoreContext) context).getClient();
-
         try {
             CloudBlobContainer containerReference = client.getContainerReference(container);
             long counter = 0;
