@@ -27,17 +27,18 @@ import static org.mockito.Mockito.when;
 public class CreateContainerUnitTest {
 
     @Mock
-    private DefaultAWSS3BlobStoreContext mockContext;
-
-    @Mock
     private AmazonS3Client client;
 
-    @InjectMocks
+    @Mock
+    private DefaultAWSS3BlobStoreContext mockContext;
+
     private AWSS3BlobStore blobStore;
 
     @Before
     public void init(){
         when(mockContext.getClient()).thenReturn(client);
+
+        blobStore = new AWSS3BlobStore(mockContext);
     }
 
     @Test
